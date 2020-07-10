@@ -78,6 +78,12 @@ for filename in os.listdir(directory):
     tiles = []
     for cell in json_content['layers'][0]['data']:
         tiles.append(cell - 1)
+
+    # Objects
+    objects = json_content['layers'][1]['objects']
+    for obj in objects:
+        if obj['name'] == 'player_spawn':
+            json_level['player_spawn'] = { 'x':obj['x'], 'y':obj['y'] }
     
     # Create the levels json
     json_level['gridCellsX'] = json_content['width']

@@ -3,12 +3,14 @@ class GameScene extends Phaser.Scene {
         this.levelLoader = new LevelLoader(this);
     }
     preload() {
+        this.load.atlas('player', 'assets/player.png', 'assets/player.json');
         this.levelLoader.preloadLevelJson();
         this.levelLoader.preloadSpritesheets();
     }
     create() {
         this.levelLoader.init();
         this.currentLevel = this.levelLoader.create('level01');
+        let player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
     }
     update(time, delta) {
     }
@@ -37,9 +39,105 @@ let config = {
 let game = new Phaser.Game(config);
 class ScreenTransition {
 }
+class Actor {
+    constructor(hitbox) {
+        this._hitbox = hitbox;
+    }
+    get position() {
+        return new Phaser.Math.Vector2(this.hitbox.x, this.hitbox.y);
+    }
+    get x() { return this._hitbox.x; }
+    get y() { return this._hitbox.y; }
+    set x(x) { this._hitbox.x = x; }
+    set y(y) { this._hitbox.y = y; }
+    get hitbox() {
+        return this._hitbox;
+    }
+    update() {
+    }
+    moveX(amount) {
+        this._hitbox.x += amount;
+    }
+    moveY(amount) {
+        this._hitbox.y += amount;
+    }
+}
+class Animator {
+    constructor(scene, sprite, actor) {
+        this.currentSquish = { timer: 0, startTime: 0, reverseTime: 0, scaleX: 1, scaleY: 1 };
+        this.scene = scene;
+        this.sprite = sprite;
+        this.actor = actor;
+    }
+    get facingDirection() { return this.sprite.flipX ? -1 : 1; }
+    set facingDirection(dir) { this.sprite.flipX = dir < 0; }
+    get isSquishing() { return this.currentSquish.timer > 0; }
+    update() {
+        if (this.isSquishing) {
+            this.updateSquish();
+        }
+    }
+    updatePosition() {
+        this.sprite.setPosition(this.actor.hitbox.centerX, this.actor.hitbox.centerY);
+    }
+    changeAnimation(key, isSingleFrame = false) {
+        if (isSingleFrame) {
+            this.sprite.anims.stop();
+            this.sprite.setFrame(key);
+        }
+        else {
+            this.sprite.play(key);
+            this.setTimeScale(1);
+        }
+    }
+    setTimeScale(timeScale) {
+        this.sprite.anims.setTimeScale(timeScale);
+    }
+    createAnimation(key, texture, prefix, length, frameRate = 16, repeat = -1) {
+        let frameNames = this.scene.anims.generateFrameNames(texture, {
+            prefix: prefix,
+            suffix: '.png',
+            end: length - 1,
+            zeroPad: 2
+        });
+        this.scene.anims.create({
+            key: key,
+            frames: frameNames,
+            frameRate: frameRate,
+            repeat: repeat,
+        });
+    }
+    squish(scaleX, scaleY, duration, reverseTime) {
+        this.currentSquish = {
+            timer: duration,
+            reverseTime: reverseTime == undefined ? duration / 2 : reverseTime,
+            startTime: duration,
+            scaleX: scaleX,
+            scaleY: scaleY
+        };
+    }
+    updateSquish() {
+        this.currentSquish.timer = Math.max(this.currentSquish.timer - GameTime.getElapsedMS(), 0);
+        let timeToReverse = this.currentSquish.startTime - this.currentSquish.reverseTime;
+        if (this.currentSquish.timer > timeToReverse) {
+            let t = 1 - (this.currentSquish.timer - timeToReverse) / this.currentSquish.reverseTime;
+            this.sprite.scaleX = Phaser.Math.Linear(1, this.currentSquish.scaleX, t);
+            this.sprite.scaleY = Phaser.Math.Linear(1, this.currentSquish.scaleY, t);
+        }
+        else {
+            let t = 1 - this.currentSquish.timer / timeToReverse;
+            this.sprite.scaleX = Phaser.Math.Linear(this.currentSquish.scaleX, 1, t);
+            this.sprite.scaleY = Phaser.Math.Linear(this.currentSquish.scaleY, 1, t);
+        }
+    }
+    destroy() {
+        this.sprite.destroy();
+    }
+}
 class Level {
-    constructor(map) {
+    constructor(map, playerSpawn) {
         this.map = map;
+        this.playerSpawn = new Phaser.Geom.Point(playerSpawn.x, playerSpawn.y);
     }
     destroy() {
         this.map.destroy();
@@ -61,7 +159,7 @@ class LevelLoader {
     create(name) {
         let levelJson = this.jsonData[name];
         let tilesetJson = this.jsonData[levelJson['tileset_name']];
-        return new Level(this.createTilemap(levelJson, tilesetJson));
+        return new Level(this.createTilemap(levelJson, tilesetJson), levelJson['player_spawn']);
     }
     createTilemap(levelJson, tilesetJson) {
         let gridCellsX = levelJson['gridCellsX'];
@@ -170,6 +268,54 @@ class Tilemap {
         this.tiles.splice(0, this.tiles.length);
     }
 }
+/// <reference path="../entities/actor.ts"/>
+class Player extends Actor {
+    constructor(scene, startX, startY) {
+        super(new Phaser.Geom.Rectangle(startX, startY, 16, 32));
+        this.playerView = new PlayerView(scene, this);
+    }
+    update() {
+        this.playerView.updatePosition();
+    }
+}
+/// <reference path="../entities/animator.ts"/>
+var PlayerAnimations;
+/// <reference path="../entities/animator.ts"/>
+(function (PlayerAnimations) {
+    PlayerAnimations.Idle = { key: 'player_walk_00.png', isSingleFrame: true };
+    PlayerAnimations.Run = { key: 'walk', isSingleFrame: false };
+})(PlayerAnimations || (PlayerAnimations = {}));
+class PlayerView {
+    constructor(scene, player) {
+        this.textureKey = 'player';
+        this.player = player;
+        this.sprite = scene.add.sprite(0, 0, this.textureKey, PlayerAnimations.Idle.key);
+        this.sprite.setOrigin(0.5, 1);
+        this.animator = new Animator(scene, this.sprite, this.player);
+        this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
+        this.changeAnimation(PlayerAnimations.Run);
+        this.updatePosition();
+    }
+    changeAnimation(animation) {
+        this.animator.changeAnimation(animation.key, animation.isSingleFrame);
+    }
+    updatePosition() {
+        this.sprite.setPosition(this.player.hitbox.centerX, this.player.hitbox.bottom);
+        console.log(this.player.hitbox.bottom);
+    }
+}
+var GameTime;
+(function (GameTime) {
+    GameTime.currentElapsedMS = (1 / 60) * 1000;
+    function getElapsed() {
+        return this.currentElapsedMS / 1000;
+    }
+    GameTime.getElapsed = getElapsed;
+    function getElapsedMS() {
+        return this.currentElapsedMS;
+    }
+    GameTime.getElapsedMS = getElapsedMS;
+})(GameTime || (GameTime = {}));
 let TILE_WIDTH = 16;
 let TILE_HEIGHT = 16;
 var MathHelper;
