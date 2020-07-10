@@ -1,0 +1,146 @@
+{
+	"textures": [
+		{
+			"image": "effects.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 48,
+				"h": 48
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "poof_04.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 4,
+						"w": 24,
+						"h": 24
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 24,
+						"h": 24
+					}
+				},
+				{
+					"filename": "poof_03.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 6,
+						"w": 20,
+						"h": 20
+					},
+					"frame": {
+						"x": 0,
+						"y": 24,
+						"w": 20,
+						"h": 20
+					}
+				},
+				{
+					"filename": "poof_05.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 7,
+						"w": 19,
+						"h": 21
+					},
+					"frame": {
+						"x": 24,
+						"y": 0,
+						"w": 19,
+						"h": 21
+					}
+				},
+				{
+					"filename": "poof_02.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 8,
+						"w": 16,
+						"h": 16
+					},
+					"frame": {
+						"x": 20,
+						"y": 24,
+						"w": 16,
+						"h": 16
+					}
+				},
+				{
+					"filename": "poof_01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 10,
+						"w": 12,
+						"h": 12
+					},
+					"frame": {
+						"x": 36,
+						"y": 21,
+						"w": 12,
+						"h": 12
+					}
+				},
+				{
+					"filename": "poof_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 11,
+						"y": 11,
+						"w": 10,
+						"h": 10
+					},
+					"frame": {
+						"x": 36,
+						"y": 33,
+						"w": 10,
+						"h": 10
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:e8c945b1c381e94c3c53d65c25737935:df7ce6f7e4753d3aa94b6fdb6fb4857e:05d3c1256da5d10ff4f36ef2966c3322$"
+	}
+}

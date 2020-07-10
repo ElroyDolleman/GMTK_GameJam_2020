@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "rootDir":"./src",
+        "target": "es6",
+        "sourceMap": true,
+        "outFile": "dist/js/game.js",
+        "module": "system",
+        "noImplicitAny": true
+    },
+    "exclude": [
+        "assets_source",
+        "dist",
+    ]
+}
