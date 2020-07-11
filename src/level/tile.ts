@@ -13,7 +13,7 @@ class Tile
     public position:Phaser.Geom.Point;
     public tiletype:TileType;
 
-    public canStandOn():boolean { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid; }
+    public get canStandOn():boolean { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid; }
 
     constructor(sprite:Phaser.GameObjects.Sprite, tiletype:TileType, cellX:number, cellY:number, posX:number, posY:number, hitbox:Phaser.Geom.Rectangle) {
         this.position = new Phaser.Geom.Point(posX, posY);

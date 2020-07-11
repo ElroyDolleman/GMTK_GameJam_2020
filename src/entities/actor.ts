@@ -62,5 +62,6 @@ class Actor {
         if (tile.hitbox.top == this.hitbox.bottom) {
             return this.hitbox.right > tile.hitbox.left && this.hitbox.left < tile.hitbox.right;
         }
+        return false;
     }
 }

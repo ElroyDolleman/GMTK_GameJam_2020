@@ -4,6 +4,8 @@ module PlayerAnimations
     export let Idle = { key: 'player_walk_00.png', isSingleFrame: true };
     
     export let Run = { key: 'walk', isSingleFrame: false };
+    export let Jump = { key: 'jump', isSingleFrame: false };
+    export let Fall = { key: 'fall', isSingleFrame: false };
 }
 
 class PlayerView {
@@ -21,13 +23,19 @@ class PlayerView {
         this.sprite.setOrigin(0.5, 1);
 
         this.animator = new Animator(scene, this.sprite, this.player);
-        this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
+        this.createAnimations();
+    }
 
-        this.changeAnimation(PlayerAnimations.Run);
+    private createAnimations() {
+        this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
+        this.animator.createAnimation('jump', this.textureKey, 'player_jump_', 2);
+        this.animator.createAnimation('fall', this.textureKey, 'player_fall_', 2);
+
+        this.changeAnimation(PlayerAnimations.Idle);
         this.updateVisuals();
     }
 
-    private changeAnimation(animation:any) {
+    public changeAnimation(animation:any) {
         this.animator.changeAnimation(animation.key, animation.isSingleFrame);
     }
 

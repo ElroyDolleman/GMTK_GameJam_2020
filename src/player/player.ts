@@ -2,7 +2,7 @@
 
 class Player extends Actor {
 
-    private view:PlayerView;
+    public view:PlayerView;
     public controller:PlayerController;
 
     public currentState:PlayerBaseState;
@@ -10,7 +10,7 @@ class Player extends Actor {
     public airborneState:PlayerAirborneState;
 
     constructor(scene:Phaser.Scene, startX:number, startY:number) {
-        super(new Phaser.Geom.Rectangle(startX, startY, 16, 32));
+        super(new Phaser.Geom.Rectangle(startX, startY, 16, 26));
 
         this.view = new PlayerView(scene, this);
         this.controller = new PlayerController(this);

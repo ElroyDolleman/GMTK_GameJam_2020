@@ -4,93 +4,282 @@
 			"image": "player_sheet.png",
 			"format": "RGBA8888",
 			"size": {
-				"w": 64,
-				"h": 64
+				"w": 87,
+				"h": 87
 			},
 			"scale": 1,
 			"frames": [
 				{
-					"filename": "player_walk_00.png",
+					"filename": "player_fall_00.png",
 					"rotated": false,
-					"trimmed": false,
+					"trimmed": true,
 					"sourceSize": {
-						"w": 16,
+						"w": 32,
 						"h": 32
 					},
 					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 16,
-						"h": 32
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
 					},
 					"frame": {
 						"x": 0,
 						"y": 0,
-						"w": 16,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "player_jump_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
 						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "player_fall_01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
+					},
+					"frame": {
+						"x": 0,
+						"y": 29,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "player_jump_01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
+					},
+					"frame": {
+						"x": 0,
+						"y": 29,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "player_idle_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
+					},
+					"frame": {
+						"x": 0,
+						"y": 58,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "player_walk_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
+					},
+					"frame": {
+						"x": 23,
+						"y": 0,
+						"w": 23,
+						"h": 29
 					}
 				},
 				{
 					"filename": "player_walk_01.png",
 					"rotated": false,
-					"trimmed": false,
+					"trimmed": true,
 					"sourceSize": {
-						"w": 16,
+						"w": 32,
 						"h": 32
 					},
 					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 16,
-						"h": 32
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
 					},
 					"frame": {
-						"x": 0,
-						"y": 32,
+						"x": 46,
+						"y": 0,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "jet_fire_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
 						"w": 16,
-						"h": 32
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 11,
+						"h": 15
+					},
+					"frame": {
+						"x": 69,
+						"y": 0,
+						"w": 11,
+						"h": 15
+					}
+				},
+				{
+					"filename": "jet_fire_01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 11,
+						"h": 14
+					},
+					"frame": {
+						"x": 69,
+						"y": 15,
+						"w": 11,
+						"h": 14
+					}
+				},
+				{
+					"filename": "jet_fire_03.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 11,
+						"h": 14
+					},
+					"frame": {
+						"x": 69,
+						"y": 15,
+						"w": 11,
+						"h": 14
 					}
 				},
 				{
 					"filename": "player_walk_02.png",
 					"rotated": false,
-					"trimmed": false,
+					"trimmed": true,
 					"sourceSize": {
-						"w": 16,
+						"w": 32,
 						"h": 32
 					},
 					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 16,
-						"h": 32
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
 					},
 					"frame": {
-						"x": 16,
-						"y": 0,
-						"w": 16,
-						"h": 32
+						"x": 23,
+						"y": 29,
+						"w": 23,
+						"h": 29
 					}
 				},
 				{
 					"filename": "player_walk_03.png",
 					"rotated": false,
-					"trimmed": false,
+					"trimmed": true,
 					"sourceSize": {
-						"w": 16,
+						"w": 32,
 						"h": 32
 					},
 					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 16,
-						"h": 32
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
 					},
 					"frame": {
-						"x": 16,
-						"y": 32,
+						"x": 23,
+						"y": 58,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "jet_fire_02.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
 						"w": 16,
-						"h": 32
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 0,
+						"w": 11,
+						"h": 12
+					},
+					"frame": {
+						"x": 46,
+						"y": 29,
+						"w": 11,
+						"h": 12
 					}
 				}
 			]
@@ -99,6 +288,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:391e4fb8064f324ef492f587ad6d8488:f830806a2e16b0c6a748d30ef444943e:f479e0c31071cb21388b705d67871d6a$"
+		"smartupdate": "$TexturePacker:SmartUpdate:d1e77970f49e55faa25b5ddc1be51183:a03c2dfb46832ff74b5b1a154c76a5a2:f479e0c31071cb21388b705d67871d6a$"
 	}
 }

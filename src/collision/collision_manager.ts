@@ -22,6 +22,7 @@ class CollisionManager {
     public moveActor(actor:Actor):CollisionResult {
         let result:CollisionResult = new CollisionResult();
         let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
+        result.tiles = tiles;
         result.prevTop = actor.hitbox.top;
         result.prevLeft = actor.hitbox.left;
         result.prevRight = actor.hitbox.right;

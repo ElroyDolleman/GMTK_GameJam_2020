@@ -92,6 +92,7 @@ class CollisionManager {
     moveActor(actor) {
         let result = new CollisionResult();
         let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
+        result.tiles = tiles;
         result.prevTop = actor.hitbox.top;
         result.prevLeft = actor.hitbox.left;
         result.prevRight = actor.hitbox.right;
@@ -248,6 +249,7 @@ class Actor {
         if (tile.hitbox.top == this.hitbox.bottom) {
             return this.hitbox.right > tile.hitbox.left && this.hitbox.left < tile.hitbox.right;
         }
+        return false;
     }
 }
 class Animator {
@@ -444,7 +446,7 @@ class Tile {
         this.hitbox = hitbox;
         this.sprite = sprite;
     }
-    canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid; }
+    get canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid; }
     destroy() {
         if (this.sprite) {
             this.sprite.destroy();
@@ -511,7 +513,7 @@ class Tilemap {
 /// <reference path="../entities/actor.ts"/>
 class Player extends Actor {
     constructor(scene, startX, startY) {
-        super(new Phaser.Geom.Rectangle(startX, startY, 16, 32));
+        super(new Phaser.Geom.Rectangle(startX, startY, 16, 26));
         this.view = new PlayerView(scene, this);
         this.controller = new PlayerController(this);
         this.initStates();
@@ -593,6 +595,8 @@ var PlayerAnimations;
 (function (PlayerAnimations) {
     PlayerAnimations.Idle = { key: 'player_walk_00.png', isSingleFrame: true };
     PlayerAnimations.Run = { key: 'walk', isSingleFrame: false };
+    PlayerAnimations.Jump = { key: 'jump', isSingleFrame: false };
+    PlayerAnimations.Fall = { key: 'fall', isSingleFrame: false };
 })(PlayerAnimations || (PlayerAnimations = {}));
 class PlayerView {
     constructor(scene, player) {
@@ -601,8 +605,13 @@ class PlayerView {
         this.sprite = scene.add.sprite(0, 0, this.textureKey, PlayerAnimations.Idle.key);
         this.sprite.setOrigin(0.5, 1);
         this.animator = new Animator(scene, this.sprite, this.player);
+        this.createAnimations();
+    }
+    createAnimations() {
         this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
-        this.changeAnimation(PlayerAnimations.Run);
+        this.animator.createAnimation('jump', this.textureKey, 'player_jump_', 2);
+        this.animator.createAnimation('fall', this.textureKey, 'player_fall_', 2);
+        this.changeAnimation(PlayerAnimations.Idle);
         this.updateVisuals();
     }
     changeAnimation(animation) {
@@ -720,10 +729,15 @@ class PlayerAirborneState extends PlayerBaseState {
         super(player);
     }
     enter() {
+        this.updateAnim();
     }
     update() {
+        let prevSpeedY = this.player.speed.y;
         this.player.controller.updateMovementControls();
         this.updateGravity();
+        if (MathHelper.sign(prevSpeedY) != MathHelper.sign(this.player.speed.y)) {
+            this.updateAnim();
+        }
     }
     leave() {
     }
@@ -739,6 +753,14 @@ class PlayerAirborneState extends PlayerBaseState {
         }
         else if (result.onTop) {
             this.player.speed.y = 0;
+        }
+    }
+    updateAnim() {
+        if (this.player.speed.y < 0) {
+            this.player.view.changeAnimation(PlayerAnimations.Jump);
+        }
+        else if (this.player.speed.y >= 0) {
+            this.player.view.changeAnimation(PlayerAnimations.Fall);
         }
     }
 }
@@ -760,15 +782,28 @@ class PlayerGroundedState extends PlayerBaseState {
         super(player);
     }
     enter() {
+        this.updateAnim();
     }
     update() {
+        let prevSpeedX = this.player.speed.x;
         this.player.controller.updateMovementControls();
+        if (MathHelper.sign(prevSpeedX) != MathHelper.sign(this.player.speed.x)) {
+            this.updateAnim();
+        }
     }
     leave() {
     }
     onCollisionSolved(result) {
         if (!this.player.hasGroundUnderneath(result.tiles)) {
             this.player.changeState(this.player.airborneState);
+        }
+    }
+    updateAnim() {
+        if (MathHelper.sign(this.player.speed.x) == 0) {
+            this.player.view.changeAnimation(PlayerAnimations.Idle);
+        }
+        else {
+            this.player.view.changeAnimation(PlayerAnimations.Run);
         }
     }
 }
