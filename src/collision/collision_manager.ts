@@ -46,7 +46,14 @@ class CollisionManager {
                 continue;
             }
 
-            if (tiles[i].tiletype == TileType.Solid) {
+            if (tiles[i].tiletype == TileType.SemiSolid) {
+                if (this.isFallingThroughSemisolid(tiles[i], result.prevBottom, actor.hitbox.bottom)) {
+                    result.onBottom = true;
+                    actor.hitbox.y = tiles[i].hitbox.y - actor.hitbox.height;
+                }
+            }
+
+            else if (tiles[i].tiletype == TileType.Solid) {
                 this.solveVerticalCollision(tiles[i], actor, result);
             }
         }
@@ -57,6 +64,10 @@ class CollisionManager {
 
     private overlapsNonEmptyTile(tile:Tile, actor:Actor) {
         return tile.tiletype != TileType.Empty && Phaser.Geom.Rectangle.Overlaps(tile.hitbox, actor.hitbox);
+    }
+
+    private isFallingThroughSemisolid(semisolidTile: Tile, prevBottom: number, currentBottom: number) {
+        return prevBottom <= semisolidTile.hitbox.top && currentBottom >= semisolidTile.hitbox.top;
     }
 
     private solveHorizontalCollision(tile:Tile, actor:Actor, result:CollisionResult) {

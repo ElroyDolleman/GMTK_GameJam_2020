@@ -178,7 +178,7 @@
  </tile>
  <tile id="35">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="semisolid"/>
   </properties>
  </tile>
  <tile id="36">

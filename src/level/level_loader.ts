@@ -22,8 +22,10 @@ class LevelLoader {
         let tilesetJson = this.jsonData['tilesets_data'][levelJson['tileset_name']];
 
         return new Level(
+            this.scene,
             this.createTilemap(levelJson, tilesetJson),
-            levelJson['player_spawn']
+            levelJson['player_spawn'],
+            levelJson['goal']
         );
     }
 

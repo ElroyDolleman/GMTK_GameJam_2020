@@ -85,6 +85,8 @@ for filename in os.listdir(directory):
     for obj in objects:
         if obj['name'] == 'player_spawn':
             json_level['player_spawn'] = { 'x':obj['x'], 'y':obj['y'] }
+        if obj['name'] == 'goal':
+            json_level['goal'] = { 'x':obj['x'], 'y':obj['y'] }
     
     # Create the levels json
     json_level['gridCellsX'] = json_content['width']

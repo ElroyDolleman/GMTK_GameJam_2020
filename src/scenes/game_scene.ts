@@ -3,7 +3,6 @@ class GameScene extends Phaser.Scene {
     private commandManager:CommandManager
     private levelLoader:LevelLoader;
     private currentLevel:Level;
-    private player:Player;
 
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -13,6 +12,7 @@ class GameScene extends Phaser.Scene {
     preload() {
         this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
         this.load.atlas('commands_sheet', 'assets/command_sheet.png', 'assets/command_sheet.json');
+        this.load.atlas('levelobjects_sheet', 'assets/levelobjects_sheet.png', 'assets/levelobjects_sheet.json');
         this.load.json('commands', 'assets/commands.json');
 
         this.levelLoader.preloadLevelJson();
@@ -24,20 +24,30 @@ class GameScene extends Phaser.Scene {
 
         this.levelLoader.init();
         this.currentLevel = this.levelLoader.create(levelName);
-
-        this.player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
         
         this.commandManager = new CommandManager(this, levelName);
-        this.commandManager.listenToCommand(commandEvents.jump, this.player.controller.jumpCommand, this.player.controller);
+        this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
     }
 
     update(time:number, delta:number) {
+        if (this.currentLevel.won) {
+            this.winUpdate();
+            return;
+        }
+
         this.commandManager.update();
-        this.player.update();
+        this.currentLevel.update();
 
-        this.currentLevel.collisionManager.moveActor(this.player);
+        if (this.currentLevel.won) {
+            this.onWin();
+        }
+    }
 
-        this.player.lateUpdate();
+    onWin() {
+
+    }
+    winUpdate() {
+
     }
 
     destroy() {

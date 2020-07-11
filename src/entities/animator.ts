@@ -22,7 +22,7 @@ class Animator {
         }
     }
     public updatePosition() {
-        this.sprite.setPosition(this.actor.hitbox.centerX, this.actor.hitbox.centerY);
+        this.sprite.setPosition(this.actor.x, this.actor.y);
     }
 
     public changeAnimation(key:string, isSingleFrame:boolean = false) {

@@ -6,6 +6,7 @@ class GameScene extends Phaser.Scene {
     preload() {
         this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
         this.load.atlas('commands_sheet', 'assets/command_sheet.png', 'assets/command_sheet.json');
+        this.load.atlas('levelobjects_sheet', 'assets/levelobjects_sheet.png', 'assets/levelobjects_sheet.json');
         this.load.json('commands', 'assets/commands.json');
         this.levelLoader.preloadLevelJson();
         this.levelLoader.preloadSpritesheets();
@@ -14,15 +15,15 @@ class GameScene extends Phaser.Scene {
         let levelName = 'level01';
         this.levelLoader.init();
         this.currentLevel = this.levelLoader.create(levelName);
-        this.player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
         this.commandManager = new CommandManager(this, levelName);
-        this.commandManager.listenToCommand(commandEvents.jump, this.player.controller.jumpCommand, this.player.controller);
+        this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
     }
     update(time, delta) {
+        if (this.currentLevel.won) {
+            return;
+        }
         this.commandManager.update();
-        this.player.update();
-        this.currentLevel.collisionManager.moveActor(this.player);
-        this.player.lateUpdate();
+        this.currentLevel.update();
     }
     destroy() {
         this.currentLevel.destroy();
@@ -87,7 +88,13 @@ class CollisionManager {
             if (!this.overlapsNonEmptyTile(tiles[i], actor)) {
                 continue;
             }
-            if (tiles[i].tiletype == TileType.Solid) {
+            if (tiles[i].tiletype == TileType.SemiSolid) {
+                if (this.isFallingThroughSemisolid(tiles[i], result.prevBottom, actor.hitbox.bottom)) {
+                    result.onBottom = true;
+                    actor.hitbox.y = tiles[i].hitbox.y - actor.hitbox.height;
+                }
+            }
+            else if (tiles[i].tiletype == TileType.Solid) {
                 this.solveVerticalCollision(tiles[i], actor, result);
             }
         }
@@ -96,6 +103,9 @@ class CollisionManager {
     }
     overlapsNonEmptyTile(tile, actor) {
         return tile.tiletype != TileType.Empty && Phaser.Geom.Rectangle.Overlaps(tile.hitbox, actor.hitbox);
+    }
+    isFallingThroughSemisolid(semisolidTile, prevBottom, currentBottom) {
+        return prevBottom <= semisolidTile.hitbox.top && currentBottom >= semisolidTile.hitbox.top;
     }
     solveHorizontalCollision(tile, actor, result) {
         if (actor.speed.x > 0) {
@@ -183,7 +193,7 @@ class Animator {
         }
     }
     updatePosition() {
-        this.sprite.setPosition(this.actor.hitbox.centerX, this.actor.hitbox.centerY);
+        this.sprite.setPosition(this.actor.x, this.actor.y);
     }
     changeAnimation(key, isSingleFrame = false) {
         if (isSingleFrame) {
@@ -240,13 +250,44 @@ class Animator {
     }
 }
 class Level {
-    constructor(map, playerSpawn) {
+    constructor(scene, map, playerSpawn, goalPos) {
         this.map = map;
         this.collisionManager = new CollisionManager(this);
-        this.playerSpawn = new Phaser.Geom.Point(playerSpawn.x, playerSpawn.y);
+        this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
+        this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
+        this.won = false;
+    }
+    update() {
+        this.player.update();
+        this.collisionManager.moveActor(this.player);
+        if (this.player.currentState == this.player.groundedState && this.goal.overlaps(this.player)) {
+            this.won = true;
+        }
+        this.goal.update();
+        this.player.lateUpdate();
     }
     destroy() {
         this.map.destroy();
+    }
+}
+class LevelGoal extends Actor {
+    constructor(scene, x, y) {
+        super(new Phaser.Geom.Rectangle(x, y, 16, 16));
+        this.goalAnimator = new Animator(scene, scene.add.sprite(x, y, 'levelobjects_sheet'), this);
+        this.goalAnimator.createAnimation('idle', 'levelobjects_sheet', 'goal_', 2, 12);
+        this.goalAnimator.changeAnimation('idle');
+        this.goalAnimator.sprite.setOrigin(0, 0);
+    }
+    update() {
+        this.goalAnimator.updatePosition();
+    }
+    overlaps(actor) {
+        /*return Phaser.Math.Difference(this.hitbox.centerX, actor.hitbox.centerX) < 12 &&
+            Phaser.Math.Difference(this.hitbox.bottom, actor.hitbox.bottom) < 12;*/
+        return Phaser.Geom.Rectangle.Overlaps(this.hitbox, actor.hitbox);
+    }
+    destroy() {
+        this.goalAnimator.destroy();
     }
 }
 class LevelLoader {
@@ -265,7 +306,7 @@ class LevelLoader {
     create(name) {
         let levelJson = this.jsonData[name];
         let tilesetJson = this.jsonData['tilesets_data'][levelJson['tileset_name']];
-        return new Level(this.createTilemap(levelJson, tilesetJson), levelJson['player_spawn']);
+        return new Level(this.scene, this.createTilemap(levelJson, tilesetJson), levelJson['player_spawn'], levelJson['goal']);
     }
     createTilemap(levelJson, tilesetJson) {
         let gridCellsX = levelJson['gridCellsX'];

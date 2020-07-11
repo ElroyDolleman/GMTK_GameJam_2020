@@ -1,0 +1,62 @@
+{
+	"textures": [
+		{
+			"image": "levelobjects_sheet.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 16,
+				"h": 16
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "goal_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 9,
+						"w": 16,
+						"h": 7
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 16,
+						"h": 7
+					}
+				},
+				{
+					"filename": "goal_01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 9,
+						"w": 16,
+						"h": 7
+					},
+					"frame": {
+						"x": 0,
+						"y": 7,
+						"w": 16,
+						"h": 7
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:9f59765a2bd33aa1dc36c8b33f032f0f:373509d850d14fec27f8a1ae9704af06:66946939b7e2651e8c9318c0cb91340a$"
+	}
+}
