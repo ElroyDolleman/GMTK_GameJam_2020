@@ -5,6 +5,7 @@ class GameScene extends Phaser.Scene {
     }
     preload() {
         this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
+        this.load.atlas('effects_sheet', 'assets/effects_sheet.png', 'assets/effects_sheet.json');
         this.load.atlas('commands_sheet', 'assets/command_sheet.png', 'assets/command_sheet.json');
         this.load.atlas('levelobjects_sheet', 'assets/levelobjects_sheet.png', 'assets/levelobjects_sheet.json');
         this.load.json('commands', 'assets/commands.json');
@@ -297,6 +298,9 @@ class Animator {
             repeat: repeat,
         });
     }
+    addOnCompleteCallback(callback, context) {
+        this.sprite.on('animationcomplete', callback, context);
+    }
     squish(scaleX, scaleY, duration, reverseTime) {
         this.currentSquish = {
             timer: duration,
@@ -324,13 +328,50 @@ class Animator {
         this.sprite.destroy();
     }
 }
+class Explosion extends Actor {
+    constructor(scene, x, y, radius) {
+        super(new Phaser.Geom.Rectangle(x, y, 0, 0));
+        this.dead = false;
+        this.animation = new Animator(scene, scene.add.sprite(x, y, 'effects_sheet', 'explosion_00.png'), this);
+        this.animation.createAnimation('boom', 'effects_sheet', 'explosion_', 6, 16, 0);
+        this.animation.addOnCompleteCallback(this.animationDone, this);
+        this.animation.sprite.setOrigin(0.5, 0.5);
+        this.replay(x, y, radius);
+    }
+    get canDamage() { return this.animation.sprite.anims.currentFrame.index > 3; }
+    ;
+    replay(x, y, radius) {
+        this.damageCircle = new Phaser.Geom.Circle(x, y, radius);
+        this.animation.sprite.setVisible(true);
+        this.animation.changeAnimation('boom');
+    }
+    animationDone() {
+        this.dead = true;
+        this.animation.sprite.setVisible(false);
+    }
+    overlaps(actor) {
+        return Phaser.Geom.Intersects.CircleToRectangle(this.damageCircle, actor.hitbox);
+    }
+    destroy() {
+        this.animation.destroy();
+    }
+}
 class Level {
     constructor(scene, map, playerSpawn, goalPos) {
         this.map = map;
+        this.scene = scene;
         this.collisionManager = new CollisionManager(this);
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
         this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
+        this.explosions = [];
+        this.explosionsPool = [];
         this.won = false;
+        setTimeout(() => {
+            this.addExplosion(this.player.x, this.player.y);
+        }, 3000);
+        setTimeout(() => {
+            this.addExplosion(this.player.x, this.player.y);
+        }, 6000);
     }
     update() {
         this.player.update();
@@ -340,6 +381,30 @@ class Level {
         }
         this.goal.update();
         this.player.lateUpdate();
+        for (let i = 0; i < this.explosions.length; i++) {
+            if (this.explosions[i].dead) {
+                this.explosionsPool.push(this.explosions[i]);
+                this.explosions.splice(i, 1);
+                i--;
+            }
+            else if (this.explosions[i].canDamage) {
+                if (this.explosions[i].overlaps(this.player)) {
+                    console.log("hit by explosion!");
+                }
+            }
+        }
+    }
+    addExplosion(x, y) {
+        if (this.explosionsPool.length > 0) {
+            let explosion = this.explosionsPool.pop();
+            explosion.replay(x, y, 6);
+            this.explosions.push(explosion);
+            console.log('reuse');
+        }
+        else {
+            this.explosions.push(new Explosion(this.scene, x, y, 6));
+            console.log('new');
+        }
     }
     destroy() {
         this.map.destroy();

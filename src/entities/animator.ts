@@ -53,6 +53,10 @@ class Animator {
         });
     }
 
+    public addOnCompleteCallback(callback:Function, context:any) {
+        this.sprite.on('animationcomplete', callback, context);
+    }
+
     public squish(scaleX:number, scaleY:number, duration:number, reverseTime?:number) {
         this.currentSquish = {
             timer: duration,

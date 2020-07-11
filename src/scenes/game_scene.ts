@@ -12,10 +12,11 @@ class GameScene extends Phaser.Scene {
 
     preload() {
         this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
+        this.load.atlas('effects_sheet', 'assets/effects_sheet.png', 'assets/effects_sheet.json');
         this.load.atlas('commands_sheet', 'assets/command_sheet.png', 'assets/command_sheet.json');
         this.load.atlas('levelobjects_sheet', 'assets/levelobjects_sheet.png', 'assets/levelobjects_sheet.json');
-        this.load.json('commands', 'assets/commands.json');
 
+        this.load.json('commands', 'assets/commands.json');
         this.levelLoader.preloadLevelJson();
         this.levelLoader.preloadSpritesheets();
     }

@@ -2,17 +2,25 @@ class Level
 {
     public collisionManager:CollisionManager;
     public map:Tilemap;
+    public scene:Phaser.Scene;
 
     public player:Player;
     public goal:LevelGoal;
     public won:boolean;
 
+    public explosions:Explosion[];
+    public explosionsPool:Explosion[];
+
     constructor(scene:Phaser.Scene, map:Tilemap, playerSpawn:any, goalPos:any) {
         this.map = map;
+        this.scene = scene;
         this.collisionManager = new CollisionManager(this);
 
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
         this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
+
+        this.explosions = [];
+        this.explosionsPool = [];
 
         this.won = false;
     }
@@ -28,6 +36,30 @@ class Level
 
         this.goal.update();
         this.player.lateUpdate();
+
+        for (let i = 0; i < this.explosions.length; i++) {
+            if (this.explosions[i].dead) {
+                this.explosionsPool.push(this.explosions[i]);
+                this.explosions.splice(i, 1);
+                i--;
+            }
+            else if (this.explosions[i].canDamage) {
+                if (this.explosions[i].overlaps(this.player)) {
+                    console.log("hit by explosion!");
+                }
+            }
+        }
+    }
+
+    public addExplosion(x:number, y:number) {
+        if (this.explosionsPool.length > 0) {
+            let explosion = this.explosionsPool.pop();
+            explosion.replay(x, y, 6);
+            this.explosions.push(explosion);
+        }
+        else {
+            this.explosions.push(new Explosion(this.scene, x, y, 6));
+        }
     }
 
     public destroy() {

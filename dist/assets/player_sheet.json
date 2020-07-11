@@ -157,6 +157,27 @@
 					}
 				},
 				{
+					"filename": "rocket_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 5,
+						"w": 16,
+						"h": 7
+					},
+					"frame": {
+						"x": 69,
+						"y": 0,
+						"w": 16,
+						"h": 7
+					}
+				},
+				{
 					"filename": "jet_fire_00.png",
 					"rotated": false,
 					"trimmed": true,
@@ -172,7 +193,7 @@
 					},
 					"frame": {
 						"x": 69,
-						"y": 0,
+						"y": 7,
 						"w": 11,
 						"h": 15
 					}
@@ -193,7 +214,7 @@
 					},
 					"frame": {
 						"x": 69,
-						"y": 15,
+						"y": 22,
 						"w": 11,
 						"h": 14
 					}
@@ -214,7 +235,7 @@
 					},
 					"frame": {
 						"x": 69,
-						"y": 15,
+						"y": 22,
 						"w": 11,
 						"h": 14
 					}
@@ -235,7 +256,7 @@
 					},
 					"frame": {
 						"x": 23,
-						"y": 29,
+						"y": 36,
 						"w": 23,
 						"h": 29
 					}
@@ -255,8 +276,8 @@
 						"h": 29
 					},
 					"frame": {
-						"x": 23,
-						"y": 58,
+						"x": 46,
+						"y": 29,
 						"w": 23,
 						"h": 29
 					}
@@ -276,8 +297,8 @@
 						"h": 12
 					},
 					"frame": {
-						"x": 46,
-						"y": 29,
+						"x": 69,
+						"y": 36,
 						"w": 11,
 						"h": 12
 					}
@@ -288,6 +309,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:d1e77970f49e55faa25b5ddc1be51183:a03c2dfb46832ff74b5b1a154c76a5a2:f479e0c31071cb21388b705d67871d6a$"
+		"smartupdate": "$TexturePacker:SmartUpdate:9d4b6db51c84c00e6a64dfec4d71acb1:6888224c210599d1416171f384db89bb:f479e0c31071cb21388b705d67871d6a$"
 	}
 }

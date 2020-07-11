@@ -4,13 +4,13 @@
 			"image": "effects_sheet.png",
 			"format": "RGBA8888",
 			"size": {
-				"w": 48,
-				"h": 48
+				"w": 81,
+				"h": 81
 			},
 			"scale": 1,
 			"frames": [
 				{
-					"filename": "poof_04.png",
+					"filename": "explosion_03.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -18,16 +18,58 @@
 						"h": 32
 					},
 					"spriteSourceSize": {
-						"x": 4,
-						"y": 4,
-						"w": 24,
-						"h": 24
+						"x": 0,
+						"y": 1,
+						"w": 32,
+						"h": 31
 					},
 					"frame": {
 						"x": 0,
 						"y": 0,
-						"w": 24,
-						"h": 24
+						"w": 32,
+						"h": 31
+					}
+				},
+				{
+					"filename": "explosion_04.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 32,
+						"h": 31
+					},
+					"frame": {
+						"x": 0,
+						"y": 31,
+						"w": 32,
+						"h": 31
+					}
+				},
+				{
+					"filename": "explosion_02.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 2,
+						"w": 29,
+						"h": 29
+					},
+					"frame": {
+						"x": 32,
+						"y": 0,
+						"w": 29,
+						"h": 29
 					}
 				},
 				{
@@ -45,14 +87,14 @@
 						"h": 20
 					},
 					"frame": {
-						"x": 0,
-						"y": 24,
+						"x": 61,
+						"y": 0,
 						"w": 20,
 						"h": 20
 					}
 				},
 				{
-					"filename": "poof_05.png",
+					"filename": "explosion_01.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -60,16 +102,58 @@
 						"h": 32
 					},
 					"spriteSourceSize": {
-						"x": 6,
-						"y": 7,
-						"w": 19,
-						"h": 21
+						"x": 2,
+						"y": 2,
+						"w": 27,
+						"h": 27
 					},
 					"frame": {
-						"x": 24,
-						"y": 0,
-						"w": 19,
-						"h": 21
+						"x": 32,
+						"y": 29,
+						"w": 27,
+						"h": 27
+					}
+				},
+				{
+					"filename": "explosion_05.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 2,
+						"w": 25,
+						"h": 25
+					},
+					"frame": {
+						"x": 32,
+						"y": 56,
+						"w": 25,
+						"h": 25
+					}
+				},
+				{
+					"filename": "poof_04.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 4,
+						"w": 24,
+						"h": 24
+					},
+					"frame": {
+						"x": 57,
+						"y": 56,
+						"w": 24,
+						"h": 24
 					}
 				},
 				{
@@ -87,10 +171,52 @@
 						"h": 16
 					},
 					"frame": {
-						"x": 20,
-						"y": 24,
+						"x": 0,
+						"y": 62,
 						"w": 16,
 						"h": 16
+					}
+				},
+				{
+					"filename": "explosion_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 10,
+						"w": 15,
+						"h": 13
+					},
+					"frame": {
+						"x": 16,
+						"y": 62,
+						"w": 15,
+						"h": 13
+					}
+				},
+				{
+					"filename": "poof_05.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 7,
+						"w": 19,
+						"h": 21
+					},
+					"frame": {
+						"x": 61,
+						"y": 20,
+						"w": 19,
+						"h": 21
 					}
 				},
 				{
@@ -108,8 +234,8 @@
 						"h": 12
 					},
 					"frame": {
-						"x": 36,
-						"y": 21,
+						"x": 59,
+						"y": 41,
 						"w": 12,
 						"h": 12
 					}
@@ -129,8 +255,8 @@
 						"h": 10
 					},
 					"frame": {
-						"x": 36,
-						"y": 33,
+						"x": 71,
+						"y": 41,
 						"w": 10,
 						"h": 10
 					}
@@ -141,6 +267,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:29ce810353fbfd4ea26587c2b6066b1c:df7ce6f7e4753d3aa94b6fdb6fb4857e:7782619e82dc9c6d43ffa07525bf018b$"
+		"smartupdate": "$TexturePacker:SmartUpdate:4b521ea45d0052dae62f05446100aa84:a4663719cbbb4ec3de160cf8fce19409:7782619e82dc9c6d43ffa07525bf018b$"
 	}
 }
