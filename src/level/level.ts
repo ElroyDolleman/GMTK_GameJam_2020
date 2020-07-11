@@ -18,7 +18,7 @@ class Level
         this.collisionManager = new CollisionManager(this);
 
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
-        this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
+        this.player = new Player(scene, this, playerSpawn.x, playerSpawn.y);
 
         this.explosions = [];
         this.explosionsPool = [];
@@ -54,15 +54,13 @@ class Level
         }
 
         // Projectiles
-        console.log(this.projectiles.length);
         for (let i = 0; i < this.projectiles.length; i++) {
             let projectile = this.projectiles[i];
             projectile.moveX();
             projectile.moveY();
 
             if (this.collisionManager.overlapsSolidTile(projectile)) {
-                console.log("projecttile hit");
-                this.addExplosion(projectile.x, projectile.y);
+                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;
@@ -82,15 +80,22 @@ class Level
     }
 
     public addProjectile(props:any, x:number, y:number, speedX:number, speedY:number) {
-        let sprite = this.scene.add.sprite(x, y, props.texture, props.frame);
-        let projectile = new Projectile(sprite, x, y, props.width, props.height);
-        projectile.speed.x = speedX;
-        projectile.speed.y = speedY;
+        let sprite = this.scene.add.sprite(0, 0, props.texture, props.frame);
+        let projectile = new Projectile(sprite, x, y, props.width, props.height, speedX, speedY);
         
         this.projectiles.push(projectile);
     }
 
     public destroy() {
+        for (let i = 0; i < this.explosions.length; i++) {
+            this.explosions[i].destroy();
+        }
+        for (let i = 0; i < this.explosionsPool.length; i++) {
+            this.explosionsPool[i].destroy();
+        }
+        for (let i = 0; i < this.projectiles.length; i++) {
+            this.projectiles[i].destroy();
+        }
         this.map.destroy();
         this.goal.destroy();
         this.player.destroy();

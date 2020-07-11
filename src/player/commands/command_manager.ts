@@ -1,5 +1,6 @@
 let commandEvents = {
     jump: 'jump',
+    rocket: 'rocket',
 }
 
 class CommandManager {
@@ -29,8 +30,8 @@ class CommandManager {
         if (this.timer >= this.currentCommand.time) {
             this.timer -= this.currentCommand.time;
 
-            this.commandIndex = this.getNextCommandIndex();
             this.commandEventEmitter.emit(this.currentCommand.name);
+            this.commandIndex = this.getNextCommandIndex();
         }
 
         this.view.update(this.timer);

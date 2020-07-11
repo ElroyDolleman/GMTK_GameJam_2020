@@ -22,6 +22,7 @@ class GameScene extends Phaser.Scene {
         this.currentLevel = this.levelLoader.create(levelName);
         this.commandManager = new CommandManager(this, levelName);
         this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
+        this.commandManager.listenToCommand(commandEvents.rocket, this.currentLevel.player.controller.shootRocketCommand, this.currentLevel.player.controller);
     }
     update(time, delta) {
         if (this.currentLevel.won) {
@@ -359,7 +360,9 @@ class Explosion extends Actor {
     get canDamage() { return this.animation.sprite.anims.currentFrame.index > 3; }
     ;
     replay(x, y, radius) {
-        this.damageCircle = new Phaser.Geom.Circle(x, y, radius);
+        this.damageCircle = new Phaser.Geom.Circle(this.hitbox.centerX, this.hitbox.centerY, radius);
+        this.animation.sprite.x = x;
+        this.animation.sprite.y = y;
         this.animation.sprite.setVisible(true);
         this.animation.changeAnimation('boom');
     }
@@ -375,10 +378,20 @@ class Explosion extends Actor {
     }
 }
 class Projectile extends Actor {
-    constructor(sprite, x, y, width, height) {
+    constructor(sprite, x, y, width, height, speedX, speedY) {
         super(new Phaser.Geom.Rectangle(x, y, width, height));
         this.sprite = sprite;
-        sprite.setOrigin(0.5, 0.5);
+        this.sprite.setOrigin(0.5, 0.5);
+        this.sprite.x = this.hitbox.centerX;
+        this.sprite.y = this.hitbox.centerY;
+        this.speed.x = speedX;
+        this.speed.y = speedY;
+        if (this.speedDirectionX == 1) {
+            this.sprite.flipX = false;
+        }
+        else if (this.speedDirectionX == -1) {
+            this.sprite.flipX = true;
+        }
     }
     moveX() {
         super.moveX();
@@ -398,14 +411,11 @@ class Level {
         this.scene = scene;
         this.collisionManager = new CollisionManager(this);
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
-        this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
+        this.player = new Player(scene, this, playerSpawn.x, playerSpawn.y);
         this.explosions = [];
         this.explosionsPool = [];
         this.projectiles = [];
         this.won = false;
-        setTimeout(() => {
-            this.addProjectile(ProjectileTypes.playerRocket, this.player.x, this.player.y, 120, 0);
-        }, 3000);
     }
     update() {
         this.player.update();
@@ -429,14 +439,12 @@ class Level {
             }
         }
         // Projectiles
-        console.log(this.projectiles.length);
         for (let i = 0; i < this.projectiles.length; i++) {
             let projectile = this.projectiles[i];
             projectile.moveX();
             projectile.moveY();
             if (this.collisionManager.overlapsSolidTile(projectile)) {
-                console.log("projecttile hit");
-                this.addExplosion(projectile.x, projectile.y);
+                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;
@@ -454,13 +462,20 @@ class Level {
         }
     }
     addProjectile(props, x, y, speedX, speedY) {
-        let sprite = this.scene.add.sprite(x, y, props.texture, props.frame);
-        let projectile = new Projectile(sprite, x, y, props.width, props.height);
-        projectile.speed.x = speedX;
-        projectile.speed.y = speedY;
+        let sprite = this.scene.add.sprite(0, 0, props.texture, props.frame);
+        let projectile = new Projectile(sprite, x, y, props.width, props.height, speedX, speedY);
         this.projectiles.push(projectile);
     }
     destroy() {
+        for (let i = 0; i < this.explosions.length; i++) {
+            this.explosions[i].destroy();
+        }
+        for (let i = 0; i < this.explosionsPool.length; i++) {
+            this.explosionsPool[i].destroy();
+        }
+        for (let i = 0; i < this.projectiles.length; i++) {
+            this.projectiles[i].destroy();
+        }
         this.map.destroy();
         this.goal.destroy();
         this.player.destroy();
@@ -631,8 +646,9 @@ class Tilemap {
 }
 /// <reference path="../entities/actor.ts"/>
 class Player extends Actor {
-    constructor(scene, startX, startY) {
+    constructor(scene, level, startX, startY) {
         super(new Phaser.Geom.Rectangle(startX, startY, 16, 26));
+        this.level = level;
         this.view = new PlayerView(scene, this);
         this.controller = new PlayerController(this);
         this.initStates();
@@ -704,14 +720,15 @@ class PlayerController {
         else {
             this.player.decelerate(runAcceleration);
         }
-        //Temp
-        if (Inputs.Up.isDown && this.player.airborneState != this.player.currentState) {
-            this.jumpCommand();
-        }
     }
     jumpCommand() {
         this.player.speed.y = -320;
         this.player.changeState(this.player.airborneState);
+    }
+    shootRocketCommand() {
+        let dir = this.player.view.animator.facingDirection;
+        let xpos = this.player.hitbox.centerX - ProjectileTypes.playerRocket.width / 2;
+        this.player.level.addProjectile(ProjectileTypes.playerRocket, xpos + (8 * dir), this.player.hitbox.centerY - 3, 140 * dir, 0);
     }
 }
 /// <reference path="../entities/animator.ts"/>
@@ -780,6 +797,7 @@ class PlayerView {
 }
 let commandEvents = {
     jump: 'jump',
+    rocket: 'rocket',
 };
 class CommandManager {
     constructor(scene, levelName) {
@@ -797,8 +815,8 @@ class CommandManager {
         this.timer += GameTime.getElapsedMS();
         if (this.timer >= this.currentCommand.time) {
             this.timer -= this.currentCommand.time;
-            this.commandIndex = this.getNextCommandIndex();
             this.commandEventEmitter.emit(this.currentCommand.name);
+            this.commandIndex = this.getNextCommandIndex();
         }
         this.view.update(this.timer);
     }
@@ -985,13 +1003,14 @@ let TILE_HEIGHT = 16;
 var Inputs;
 (function (Inputs) {
     function initKeyInputs(scene) {
-        Inputs.Up = scene.input.keyboard.addKey('up');
+        //Inputs.Up = scene.input.keyboard.addKey('up');
         Inputs.Left = scene.input.keyboard.addKey('left');
-        Inputs.Down = scene.input.keyboard.addKey('down');
+        //Inputs.Down = scene.input.keyboard.addKey('down');
         Inputs.Right = scene.input.keyboard.addKey('right');
     }
     Inputs.initKeyInputs = initKeyInputs;
 })(Inputs || (Inputs = {}));
+//let elroy:Phaser.Scene;
 var MathHelper;
 (function (MathHelper) {
     /**

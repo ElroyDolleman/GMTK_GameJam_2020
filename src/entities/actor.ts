@@ -1,5 +1,7 @@
 class Actor {
     
+    //private debug:Phaser.GameObjects.Graphics;
+
     public speed:Phaser.Math.Vector2;
 
     public get position():Phaser.Math.Vector2 { 

@@ -12,7 +12,7 @@ class PlayerView {
 
     private sprite:Phaser.GameObjects.Sprite;
     private player:Player;
-    private animator:Animator;
+    public animator:Animator;
 
     private jetFireAnimation:Animator;
 
@@ -24,7 +24,7 @@ class PlayerView {
         this.sprite = scene.add.sprite(0, 0, this.textureKey, PlayerAnimations.Idle.key);
         this.sprite.setOrigin(0.5, 1);
 
-        this.createAnimations(scene);
+        this.createAnimations(scene);        
     }
 
     private createAnimations(scene:Phaser.Scene) {

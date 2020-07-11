@@ -15,15 +15,22 @@ class PlayerController {
         else {
             this.player.decelerate(runAcceleration);
         }
-
-        //Temp
-        if (Inputs.Up.isDown && this.player.airborneState != this.player.currentState) {
-            this.jumpCommand();
-        }
     }
 
     public jumpCommand() {
         this.player.speed.y = -320;
         this.player.changeState(this.player.airborneState);
+    }
+
+    public shootRocketCommand() {
+        let dir = this.player.view.animator.facingDirection;
+        let xpos = this.player.hitbox.centerX - ProjectileTypes.playerRocket.width / 2;
+        this.player.level.addProjectile(
+            ProjectileTypes.playerRocket, 
+            xpos + (8 * dir),
+            this.player.hitbox.centerY - 3,
+            140 * dir, 
+            0
+        );
     }
 }

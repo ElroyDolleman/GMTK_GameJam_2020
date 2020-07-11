@@ -22,8 +22,10 @@ class Explosion extends Actor {
     }
 
     public replay(x:number, y:number, radius:number) {
-        this.damageCircle = new Phaser.Geom.Circle(x, y, radius);
+        this.damageCircle = new Phaser.Geom.Circle(this.hitbox.centerX, this.hitbox.centerY, radius);
 
+        this.animation.sprite.x = x;
+        this.animation.sprite.y = y;
         this.animation.sprite.setVisible(true);
         this.animation.changeAnimation('boom');
     }
@@ -37,7 +39,7 @@ class Explosion extends Actor {
         return Phaser.Geom.Intersects.CircleToRectangle(this.damageCircle, actor.hitbox);
     }
 
-    private destroy() {
+    public destroy() {
         this.animation.destroy();
     }
 }

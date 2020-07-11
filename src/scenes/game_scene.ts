@@ -35,6 +35,7 @@ class GameScene extends Phaser.Scene {
 
         this.commandManager = new CommandManager(this, levelName);
         this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
+        this.commandManager.listenToCommand(commandEvents.rocket, this.currentLevel.player.controller.shootRocketCommand, this.currentLevel.player.controller);
     }
 
     update(time:number, delta:number) {

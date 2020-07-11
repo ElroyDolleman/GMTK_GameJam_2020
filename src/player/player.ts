@@ -2,6 +2,8 @@
 
 class Player extends Actor {
 
+    public level:Level;
+
     public view:PlayerView;
     public controller:PlayerController;
 
@@ -16,9 +18,10 @@ class Player extends Actor {
         return false;
     }
 
-    constructor(scene:Phaser.Scene, startX:number, startY:number) {
+    constructor(scene:Phaser.Scene, level:Level, startX:number, startY:number) {
         super(new Phaser.Geom.Rectangle(startX, startY, 16, 26));
 
+        this.level = level;
         this.view = new PlayerView(scene, this);
         this.controller = new PlayerController(this);
 
