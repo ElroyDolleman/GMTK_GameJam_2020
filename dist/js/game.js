@@ -34,18 +34,33 @@ class GameScene extends Phaser.Scene {
         else if (this.screenTransition.active) {
             return;
         }
-        this.commandManager.update();
+        if (!this.currentLevel.player.dead) {
+            this.commandManager.update();
+        }
+        let wasDead = this.currentLevel.player.dead;
         this.currentLevel.update();
-        if (this.currentLevel.won) {
+        if (!wasDead && this.currentLevel.player.dead) {
+            setTimeout(this.onDead.bind(this), 800);
+        }
+        else if (this.currentLevel.won) {
             this.onWin();
         }
     }
     onWin() {
         this.screenTransition.onLevelClose(this.endLevel, this);
     }
+    onDead() {
+        this.screenTransition.onLevelClose(this.restartLevel, this);
+    }
     winUpdate() {
     }
     endLevel() {
+        this.commandManager.destroy();
+        this.currentLevel.destroy();
+        this.screenTransition.onLevelEnter();
+        this.startLevel();
+    }
+    restartLevel() {
         this.commandManager.destroy();
         this.currentLevel.destroy();
         this.screenTransition.onLevelEnter();
@@ -109,6 +124,9 @@ class CollisionManager {
             if (tiles[i].isSolid) {
                 this.solveHorizontalCollision(tiles[i], actor, result);
             }
+            else if (tiles[i].tiletype == TileType.Hazard) {
+                result.isDamaged = true;
+            }
         }
         actor.moveY();
         for (let i = 0; i < tiles.length; i++) {
@@ -124,6 +142,9 @@ class CollisionManager {
             else if (tiles[i].isSolid) {
                 this.solveVerticalCollision(tiles[i], actor, result);
             }
+            else if (tiles[i].tiletype == TileType.Hazard) {
+                result.isDamaged = true;
+            }
         }
         actor.onCollisionSolved(result);
         return result;
@@ -136,7 +157,6 @@ class CollisionManager {
                 i--;
             }
         }
-        console.log(tiles);
         return tiles;
     }
     overlapsNonEmptyTile(tile, actor) {
@@ -356,7 +376,7 @@ class Explosion extends Actor {
         super(new Phaser.Geom.Rectangle(x, y, 0, 0));
         this.dead = false;
         this.animation = new Animator(scene, scene.add.sprite(x, y, 'effects_sheet', 'explosion_00.png'), this);
-        this.animation.createAnimation('boom', 'effects_sheet', 'explosion_', 6, 16, 0);
+        this.animation.createAnimation('boom', 'effects_sheet', 'explosion_', 6, 14, 0);
         this.animation.addOnCompleteCallback(this.animationDone, this);
         this.animation.sprite.setOrigin(0.5, 0.5);
         this.replay(x, y, radius);
@@ -367,8 +387,9 @@ class Explosion extends Actor {
         this.damageCircle = new Phaser.Geom.Circle(this.hitbox.centerX, this.hitbox.centerY, radius);
         this.animation.sprite.x = x;
         this.animation.sprite.y = y;
-        this.animation.sprite.setVisible(true);
         this.animation.changeAnimation('boom');
+        this.animation.sprite.setVisible(true);
+        this.dead = false;
     }
     animationDone() {
         this.dead = true;
@@ -415,7 +436,7 @@ class Level {
         this.scene = scene;
         this.collisionManager = new CollisionManager(this);
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
-        this.player = new Player(scene, this, playerSpawn.x, playerSpawn.y);
+        this.player = new Player(scene, this, playerSpawn.x, playerSpawn.y + 32);
         this.explosions = [];
         this.explosionsPool = [];
         this.projectiles = [];
@@ -437,8 +458,8 @@ class Level {
                 i--;
             }
             else if (this.explosions[i].canDamage) {
-                if (this.explosions[i].overlaps(this.player)) {
-                    console.log("hit by explosion!");
+                if (!this.player.dead && this.explosions[i].overlaps(this.player)) {
+                    this.player.die();
                 }
             }
         }
@@ -495,7 +516,7 @@ class LevelGoal extends Actor {
     constructor(scene, x, y) {
         super(new Phaser.Geom.Rectangle(x, y, 16, 16));
         this.goalAnimator = new Animator(scene, scene.add.sprite(x, y, 'levelobjects_sheet'), this);
-        this.goalAnimator.createAnimation('idle', 'levelobjects_sheet', 'goal_', 2, 12);
+        this.goalAnimator.createAnimation('idle', 'levelobjects_sheet', 'goal_', 2, 8);
         this.goalAnimator.changeAnimation('idle');
         this.goalAnimator.sprite.setOrigin(0, 0);
     }
@@ -744,7 +765,9 @@ class Tilemap {
 /// <reference path="../entities/actor.ts"/>
 class Player extends Actor {
     constructor(scene, level, startX, startY) {
-        super(new Phaser.Geom.Rectangle(startX, startY, 16, 26));
+        super(new Phaser.Geom.Rectangle(startX, startY - 26, 16, 26));
+        this.dead = false;
+        this.deadTimer = 0;
         this.level = level;
         this.view = new PlayerView(scene, this);
         this.controller = new PlayerController(this);
@@ -762,13 +785,36 @@ class Player extends Actor {
         this.currentState = this.groundedState;
     }
     update() {
+        if (this.dead) {
+            this.updateDead();
+            return;
+        }
         this.currentState.update();
     }
     lateUpdate() {
         this.view.updateVisuals();
     }
+    updateDead() {
+        if (this.speed.y < 240) {
+            this.speed.y = Math.min(this.speed.y + 16, 240);
+        }
+        this.deadTimer += GameTime.getElapsedMS();
+        if (this.deadTimer > 250) {
+            this.deadTimer -= 250;
+            let offsetX = 12 - Math.random() * 24;
+            let offsetY = 12 - Math.random() * 24;
+            this.level.addExplosion(this.hitbox.centerX + offsetX, this.hitbox.centerY + offsetY);
+        }
+    }
     onCollisionSolved(result) {
-        this.currentState.onCollisionSolved(result);
+        if (this.dead)
+            return;
+        if (result.isDamaged) {
+            this.die();
+        }
+        else {
+            this.currentState.onCollisionSolved(result);
+        }
     }
     changeState(newState) {
         this.currentState.leave();
@@ -798,6 +844,14 @@ class Player extends Actor {
         else {
             this.speed.x -= deceleration * MathHelper.sign(this.speed.x);
         }
+    }
+    die() {
+        this.dead = true;
+        this.view.changeAnimation(PlayerAnimations.Dead);
+        this.speed.x = 0;
+        if (this.speed.y < 0)
+            this.speed.y = 0;
+        this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY);
     }
     destroy() {
         this.view.destroy();
@@ -833,6 +887,7 @@ var PlayerAnimations;
 /// <reference path="../entities/animator.ts"/>
 (function (PlayerAnimations) {
     PlayerAnimations.Idle = { key: 'player_walk_00.png', isSingleFrame: true };
+    PlayerAnimations.Dead = { key: 'player_dead_00.png', isSingleFrame: true };
     PlayerAnimations.Run = { key: 'walk', isSingleFrame: false };
     PlayerAnimations.Jump = { key: 'jump', isSingleFrame: false };
     PlayerAnimations.Fall = { key: 'fall', isSingleFrame: false };

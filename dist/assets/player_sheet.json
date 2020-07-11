@@ -10,7 +10,7 @@
 			"scale": 1,
 			"frames": [
 				{
-					"filename": "player_fall_00.png",
+					"filename": "player_dead_00.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -26,6 +26,27 @@
 					"frame": {
 						"x": 0,
 						"y": 0,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "player_fall_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
+					},
+					"frame": {
+						"x": 0,
+						"y": 29,
 						"w": 23,
 						"h": 29
 					}
@@ -46,7 +67,7 @@
 					},
 					"frame": {
 						"x": 0,
-						"y": 0,
+						"y": 29,
 						"w": 23,
 						"h": 29
 					}
@@ -67,7 +88,7 @@
 					},
 					"frame": {
 						"x": 0,
-						"y": 29,
+						"y": 58,
 						"w": 23,
 						"h": 29
 					}
@@ -88,34 +109,13 @@
 					},
 					"frame": {
 						"x": 0,
-						"y": 29,
-						"w": 23,
-						"h": 29
-					}
-				},
-				{
-					"filename": "player_idle_00.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 32,
-						"h": 32
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 3,
-						"w": 23,
-						"h": 29
-					},
-					"frame": {
-						"x": 0,
 						"y": 58,
 						"w": 23,
 						"h": 29
 					}
 				},
 				{
-					"filename": "player_walk_00.png",
+					"filename": "player_idle_00.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -136,7 +136,7 @@
 					}
 				},
 				{
-					"filename": "player_walk_01.png",
+					"filename": "player_walk_00.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -241,7 +241,7 @@
 					}
 				},
 				{
-					"filename": "player_walk_02.png",
+					"filename": "player_walk_01.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -256,7 +256,28 @@
 					},
 					"frame": {
 						"x": 23,
-						"y": 36,
+						"y": 29,
+						"w": 23,
+						"h": 29
+					}
+				},
+				{
+					"filename": "player_walk_02.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 32,
+						"h": 32
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 23,
+						"h": 29
+					},
+					"frame": {
+						"x": 46,
+						"y": 29,
 						"w": 23,
 						"h": 29
 					}
@@ -276,8 +297,8 @@
 						"h": 29
 					},
 					"frame": {
-						"x": 46,
-						"y": 29,
+						"x": 23,
+						"y": 58,
 						"w": 23,
 						"h": 29
 					}
@@ -309,6 +330,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:9d4b6db51c84c00e6a64dfec4d71acb1:6888224c210599d1416171f384db89bb:f479e0c31071cb21388b705d67871d6a$"
+		"smartupdate": "$TexturePacker:SmartUpdate:71485c79323c7bb8aec712fefc4e2e44:ba7dd3e177205b811cc33fa5e95dd1b1:f479e0c31071cb21388b705d67871d6a$"
 	}
 }

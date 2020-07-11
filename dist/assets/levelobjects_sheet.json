@@ -4,11 +4,32 @@
 			"image": "levelobjects_sheet.png",
 			"format": "RGBA8888",
 			"size": {
-				"w": 16,
-				"h": 16
+				"w": 31,
+				"h": 31
 			},
 			"scale": 1,
 			"frames": [
+				{
+					"filename": "goal_01.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 16,
+						"h": 16
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 16,
+						"h": 16
+					}
+				},
 				{
 					"filename": "goal_00.png",
 					"rotated": false,
@@ -19,36 +40,15 @@
 					},
 					"spriteSourceSize": {
 						"x": 0,
-						"y": 9,
+						"y": 1,
 						"w": 16,
-						"h": 7
+						"h": 15
 					},
 					"frame": {
 						"x": 0,
-						"y": 0,
+						"y": 16,
 						"w": 16,
-						"h": 7
-					}
-				},
-				{
-					"filename": "goal_01.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 16,
-						"h": 16
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 9,
-						"w": 16,
-						"h": 7
-					},
-					"frame": {
-						"x": 0,
-						"y": 7,
-						"w": 16,
-						"h": 7
+						"h": 15
 					}
 				}
 			]
@@ -57,6 +57,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:9f59765a2bd33aa1dc36c8b33f032f0f:373509d850d14fec27f8a1ae9704af06:66946939b7e2651e8c9318c0cb91340a$"
+		"smartupdate": "$TexturePacker:SmartUpdate:955be3edf6758e25cbe5bdc82fe9d0ba:170498f9aa36322decea3102828cb592:66946939b7e2651e8c9318c0cb91340a$"
 	}
 }

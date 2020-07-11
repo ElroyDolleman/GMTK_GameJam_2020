@@ -51,10 +51,17 @@ class GameScene extends Phaser.Scene {
             return;
         }
 
-        this.commandManager.update();
+        if (!this.currentLevel.player.dead) {
+            this.commandManager.update();
+        }
+
+        let wasDead = this.currentLevel.player.dead;
         this.currentLevel.update();
 
-        if (this.currentLevel.won) {
+        if (!wasDead && this.currentLevel.player.dead) {
+            setTimeout(this.onDead.bind(this), 800);
+        }
+        else if (this.currentLevel.won) {
             this.onWin();
         }
     }
@@ -62,10 +69,22 @@ class GameScene extends Phaser.Scene {
     onWin() {
         this.screenTransition.onLevelClose(this.endLevel, this);
     }
+    onDead() {
+        this.screenTransition.onLevelClose(this.restartLevel, this);
+    }
+
     winUpdate() {
 
     }
+
     endLevel() {
+        this.commandManager.destroy();
+        this.currentLevel.destroy();
+        this.screenTransition.onLevelEnter();
+
+        this.startLevel();
+    }
+    restartLevel() {
         this.commandManager.destroy();
         this.currentLevel.destroy();
         this.screenTransition.onLevelEnter();

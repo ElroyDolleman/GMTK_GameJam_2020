@@ -18,7 +18,7 @@ class Level
         this.collisionManager = new CollisionManager(this);
 
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
-        this.player = new Player(scene, this, playerSpawn.x, playerSpawn.y);
+        this.player = new Player(scene, this, playerSpawn.x, playerSpawn.y + 32);
 
         this.explosions = [];
         this.explosionsPool = [];
@@ -47,8 +47,8 @@ class Level
                 i--;
             }
             else if (this.explosions[i].canDamage) {
-                if (this.explosions[i].overlaps(this.player)) {
-                    console.log("hit by explosion!");
+                if (!this.player.dead && this.explosions[i].overlaps(this.player)) {
+                    this.player.die();
                 }
             }
         }

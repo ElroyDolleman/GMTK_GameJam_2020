@@ -38,6 +38,10 @@ class CollisionManager {
             if (tiles[i].isSolid) {
                 this.solveHorizontalCollision(tiles[i], actor, result);
             }
+
+            else if (tiles[i].tiletype == TileType.Hazard) {
+                result.isDamaged = true;
+            }
         }
 
         actor.moveY();
@@ -56,6 +60,10 @@ class CollisionManager {
 
             else if (tiles[i].isSolid) {
                 this.solveVerticalCollision(tiles[i], actor, result);
+            }
+
+            else if (tiles[i].tiletype == TileType.Hazard) {
+                result.isDamaged = true;
             }
         }
 

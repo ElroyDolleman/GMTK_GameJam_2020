@@ -11,6 +11,9 @@ class Player extends Actor {
     public groundedState:PlayerGroundedState;
     public airborneState:PlayerAirborneState;
 
+    public dead:boolean = false;
+    private deadTimer:number = 0;
+
     public get isJumping():boolean {
         if (this.currentState == this.airborneState) {
             return this.speed.y < 0;
@@ -19,7 +22,7 @@ class Player extends Actor {
     }
 
     constructor(scene:Phaser.Scene, level:Level, startX:number, startY:number) {
-        super(new Phaser.Geom.Rectangle(startX, startY, 16, 26));
+        super(new Phaser.Geom.Rectangle(startX, startY - 26, 16, 26));
 
         this.level = level;
         this.view = new PlayerView(scene, this);
@@ -36,6 +39,11 @@ class Player extends Actor {
     }
 
     update() {
+        if (this.dead) {
+            this.updateDead();
+            return;
+        }
+
         this.currentState.update();
     }
 
@@ -43,8 +51,29 @@ class Player extends Actor {
         this.view.updateVisuals();
     }
 
+    updateDead() {
+        if (this.speed.y < 240) {
+            this.speed.y = Math.min(this.speed.y + 16, 240);
+        }
+        this.deadTimer += GameTime.getElapsedMS();
+        if (this.deadTimer > 250) {
+            this.deadTimer -= 250;
+
+            let offsetX = 12 - Math.random() * 24;
+            let offsetY = 12 - Math.random() * 24;
+            this.level.addExplosion(this.hitbox.centerX + offsetX, this.hitbox.centerY + offsetY);
+        }
+    }
+
     onCollisionSolved(result:CollisionResult) {
-        this.currentState.onCollisionSolved(result);
+        if (this.dead) return;
+
+        if (result.isDamaged) {
+            this.die();
+        }
+        else {
+            this.currentState.onCollisionSolved(result);
+        }
     }
 
     public changeState(newState:PlayerBaseState) {
@@ -78,6 +107,15 @@ class Player extends Actor {
         else {
             this.speed.x -= deceleration * MathHelper.sign(this.speed.x);
         }
+    }
+
+    public die() {
+        this.dead = true;
+        this.view.changeAnimation(PlayerAnimations.Dead);
+        this.speed.x = 0;
+        if (this.speed.y < 0) this.speed.y = 0;
+
+        this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY);
     }
 
     destroy() {

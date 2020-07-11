@@ -2,6 +2,7 @@
 module PlayerAnimations
 {
     export let Idle = { key: 'player_walk_00.png', isSingleFrame: true };
+    export let Dead = { key: 'player_dead_00.png', isSingleFrame: true };
     
     export let Run = { key: 'walk', isSingleFrame: false };
     export let Jump = { key: 'jump', isSingleFrame: false };

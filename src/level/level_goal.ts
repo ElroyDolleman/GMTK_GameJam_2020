@@ -9,7 +9,7 @@ class LevelGoal extends Actor {
             scene.add.sprite(x, y, 'levelobjects_sheet'),
             this
         );
-        this.goalAnimator.createAnimation('idle', 'levelobjects_sheet', 'goal_', 2, 12);
+        this.goalAnimator.createAnimation('idle', 'levelobjects_sheet', 'goal_', 2, 8);
         this.goalAnimator.changeAnimation('idle');
         this.goalAnimator.sprite.setOrigin(0, 0);
     }
