@@ -1,1 +1,1 @@
-{"level01":[{"command":"jump","time":1200},{"command":"jump","time":1000},{"command":"jump","time":500}]}
+{"level01":[{"name":"jump","time":1000},{"name":"jump","time":1000},{"name":"jump","time":1000}]}

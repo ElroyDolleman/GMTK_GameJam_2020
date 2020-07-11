@@ -4,7 +4,8 @@ class GameScene extends Phaser.Scene {
         Inputs.initKeyInputs(this);
     }
     preload() {
-        this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+        this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
+        this.load.atlas('commands_sheet', 'assets/command_sheet.png', 'assets/command_sheet.json');
         this.load.json('commands', 'assets/commands.json');
         this.levelLoader.preloadLevelJson();
         this.levelLoader.preloadSpritesheets();
@@ -476,7 +477,7 @@ var PlayerAnimations;
 })(PlayerAnimations || (PlayerAnimations = {}));
 class PlayerView {
     constructor(scene, player) {
-        this.textureKey = 'player';
+        this.textureKey = 'player_sheet';
         this.player = player;
         this.sprite = scene.add.sprite(0, 0, this.textureKey, PlayerAnimations.Idle.key);
         this.sprite.setOrigin(0.5, 1);
@@ -510,6 +511,7 @@ class CommandManager {
         this.timer = 0;
         this.commandEventEmitter = new Phaser.Events.EventEmitter();
         this.levelCommands = scene.cache.json.get('commands')[levelName];
+        this.view = new CommandView(this, scene);
     }
     get currentCommand() { return this.levelCommands[this.commandIndex]; }
     listenToCommand(command, callback, context) {
@@ -519,15 +521,61 @@ class CommandManager {
         this.timer += GameTime.getElapsedMS();
         if (this.timer >= this.currentCommand.time) {
             this.timer -= this.currentCommand.time;
-            this.nextCommand();
-            this.commandEventEmitter.emit(this.currentCommand.command);
+            this.commandIndex = this.getNextCommandIndex();
+            this.commandEventEmitter.emit(this.currentCommand.name);
         }
+        this.view.update(this.timer);
     }
-    nextCommand() {
-        this.commandIndex = (this.commandIndex + 1) % this.levelCommands.length;
+    getNextCommandIndex(nextAmount = 1) {
+        return (this.commandIndex + nextAmount) % this.levelCommands.length;
+    }
+    getNextCommand(nextAmount = 1) {
+        return this.levelCommands[this.getNextCommandIndex(nextAmount)];
     }
     destroy() {
         this.commandEventEmitter.removeAllListeners();
+    }
+}
+class CommandView {
+    constructor(commandManager, scene) {
+        this.scene = scene;
+        this.commandManager = commandManager;
+        this.container = scene.add.container(this.x, this.y);
+        this.createBackground();
+        this.createCommandSprites();
+    }
+    get x() { return 48; }
+    ;
+    get y() { return 320 - 16; }
+    ;
+    createCommandSprites() {
+        this.sprites = [];
+        this.container.add(this.scene.add.sprite(0, 0, 'commands_sheet', 'indicator.png'));
+        let currentX = 0;
+        this.commandManager.levelCommands.forEach(command => {
+            currentX += this.convertTimeToXPos(command.time);
+            let sprite = this.scene.add.sprite(currentX, 0, 'commands_sheet', 'command_' + command.name + '.png');
+            this.container.add(sprite);
+            this.sprites.push(sprite);
+        });
+    }
+    createBackground() {
+        this.graphics = this.scene.add.graphics({ fillStyle: { color: 0x0, alpha: 1 } });
+        this.graphics.fillRect(-this.x, -16, 320, 32);
+        this.container.add(this.graphics);
+    }
+    update(currentTime) {
+        let totalTime = 0;
+        let commandsLength = this.commandManager.levelCommands.length;
+        for (let i = 0; i < commandsLength; i++) {
+            let index = this.commandManager.getNextCommandIndex(i);
+            let command = this.commandManager.levelCommands[index];
+            totalTime += command.time;
+            this.sprites[index].setX(this.convertTimeToXPos(totalTime - currentTime));
+        }
+    }
+    convertTimeToXPos(time) {
+        return time / 8;
     }
 }
 class PlayerBaseState {

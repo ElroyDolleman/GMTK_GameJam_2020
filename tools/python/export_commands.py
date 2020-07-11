@@ -12,12 +12,12 @@ for line in content.splitlines():
         levelname = result.group(1)
         json_output[levelname] = []
 
-    else:
+    elif ';' in line:
         split = line.split(';')
         json_output[levelname].append({})
         index = len(json_output[levelname]) - 1
 
-        json_output[levelname][index]['command'] = split[0]
+        json_output[levelname][index]['name'] = split[0]
         json_output[levelname][index]['time'] = int(split[1])
 
 file.close()

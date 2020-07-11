@@ -4,16 +4,20 @@ let commandEvents = {
 
 class CommandManager {
 
+    private view: CommandView;
+
     private commandEventEmitter:Phaser.Events.EventEmitter;
-    private levelCommands:any[];
     private commandIndex:number = 0;
     private timer:number = 0;
+    public levelCommands:any[];
 
     public get currentCommand():any { return this.levelCommands[this.commandIndex]; }
 
     constructor(scene:Phaser.Scene, levelName:string) {
         this.commandEventEmitter = new Phaser.Events.EventEmitter();
         this.levelCommands = scene.cache.json.get('commands')[levelName];
+
+        this.view = new CommandView(this, scene);
     }
 
     public listenToCommand(command:string, callback:Function, context:any) {
@@ -26,8 +30,10 @@ class CommandManager {
             this.timer -= this.currentCommand.time;
 
             this.commandIndex = this.getNextCommandIndex();
-            this.commandEventEmitter.emit(this.currentCommand.command);
+            this.commandEventEmitter.emit(this.currentCommand.name);
         }
+
+        this.view.update(this.timer);
     }
 
     public getNextCommandIndex(nextAmount:number = 1):number {

@@ -12,7 +12,7 @@ class PlayerView {
     private player:Player;
     private animator:Animator;
 
-    private textureKey:string = 'player';
+    private textureKey:string = 'player_sheet';
 
     constructor(scene:Phaser.Scene, player:Player) {
         this.player = player;
