@@ -1,6 +1,6 @@
 class Actor {
     
-    public speed: Phaser.Math.Vector2;
+    public speed:Phaser.Math.Vector2;
 
     public get position():Phaser.Math.Vector2 { 
         return new Phaser.Math.Vector2(this.hitbox.x, this.hitbox.y);
@@ -24,6 +24,9 @@ class Actor {
         );
     }
 
+    public get speedDirectionX():number { return MathHelper.sign(this.speed.x); }
+    public get speedDirectionY():number { return MathHelper.sign(this.speed.y); }
+
     constructor(hitbox:Phaser.Geom.Rectangle) {
         this.speed = new Phaser.Math.Vector2();
         this._hitbox = hitbox;
@@ -38,5 +41,26 @@ class Actor {
     }
     public moveY() {
         this._hitbox.y += this.speed.y * GameTime.getElapsed();
+    }
+
+    onCollisionSolved(result:CollisionResult) {
+    }
+
+    public hasGroundUnderneath(tiles:Tile[]):boolean {
+        for (let i = 0; i < tiles.length; i++) {
+            if (!tiles[i].canStandOn) {
+                continue;
+            }
+            if (this.isStandingOnTile(tiles[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public isStandingOnTile(tile:Tile):boolean {
+        if (tile.hitbox.top == this.hitbox.bottom) {
+            return this.hitbox.right > tile.hitbox.left && this.hitbox.left < tile.hitbox.right;
+        }
     }
 }

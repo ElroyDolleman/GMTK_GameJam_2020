@@ -1,26 +1,26 @@
 class CollisionResult {
-    onTop: boolean = false;
-    onLeft: boolean = false;
-    onRight: boolean = false;
-    onBottom: boolean = false;
-    tiles: Tile[] = [];
-    prevTop: number = 0;
-    prevLeft: number = 0;
-    prevRight: number = 0;
-    prevBottom: number = 0;
-    isCrushed: boolean = false;
-    isDamaged: boolean = false;
+    onTop:boolean = false;
+    onLeft:boolean = false;
+    onRight:boolean = false;
+    onBottom:boolean = false;
+    tiles:Tile[] = [];
+    prevTop:number = 0;
+    prevLeft:number = 0;
+    prevRight:number = 0;
+    prevBottom:number = 0;
+    isCrushed:boolean = false;
+    isDamaged:boolean = false;
 }
 
 class CollisionManager {
 
-    private currentLevel: Level;
-    constructor(level: Level) {
+    private currentLevel:Level;
+    constructor(level:Level) {
         this.currentLevel = level;
     }
 
-    public moveActor(actor: Actor):CollisionResult {
-        let result: CollisionResult = new CollisionResult();
+    public moveActor(actor:Actor):CollisionResult {
+        let result:CollisionResult = new CollisionResult();
         let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
         result.prevTop = actor.hitbox.top;
         result.prevLeft = actor.hitbox.left;
@@ -51,6 +51,7 @@ class CollisionManager {
             }
         }
 
+        actor.onCollisionSolved(result);
         return result;
     }
 

@@ -8,9 +8,9 @@ class Animator {
     public set facingDirection(dir:number) { this.sprite.flipX = dir < 0; }
 
     private currentSquish: { timer:number, startTime:number, reverseTime:number, scaleX:number, scaleY:number } = { timer: 0, startTime: 0, reverseTime: 0, scaleX: 1, scaleY: 1 };
-    public get isSquishing(): boolean { return this.currentSquish.timer > 0; }
+    public get isSquishing():boolean { return this.currentSquish.timer > 0; }
 
-    constructor(scene:Phaser.Scene, sprite: Phaser.GameObjects.Sprite, actor: Actor) {
+    constructor(scene:Phaser.Scene, sprite:Phaser.GameObjects.Sprite, actor:Actor) {
         this.scene = scene;
         this.sprite = sprite;
         this.actor = actor;
@@ -53,7 +53,7 @@ class Animator {
         });
     }
 
-    public squish(scaleX: number, scaleY: number, duration: number, reverseTime?: number) {
+    public squish(scaleX:number, scaleY:number, duration:number, reverseTime?:number) {
         this.currentSquish = {
             timer: duration,
             reverseTime: reverseTime == undefined ? duration / 2 : reverseTime,

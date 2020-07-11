@@ -24,14 +24,25 @@ class PlayerView {
         this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
 
         this.changeAnimation(PlayerAnimations.Run);
-        this.updatePosition();
+        this.updateVisuals();
     }
 
     private changeAnimation(animation:any) {
         this.animator.changeAnimation(animation.key, animation.isSingleFrame);
     }
 
-    public updatePosition() {
+    public updateVisuals() {
         this.sprite.setPosition(this.player.hitbox.centerX, this.player.hitbox.bottom);
+
+        if (this.player.speedDirectionX == 1) {
+            this.sprite.flipX = false;
+        }
+        else if (this.player.speedDirectionX == -1) {
+            this.sprite.flipX = true;
+        }
+    }
+
+    destroy() {
+        this.animator.destroy();
     }
 }

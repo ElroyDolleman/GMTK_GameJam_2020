@@ -1,6 +1,7 @@
 class GameScene extends Phaser.Scene {
     init() {
         this.levelLoader = new LevelLoader(this);
+        Inputs.initKeyInputs(this);
     }
     preload() {
         this.load.atlas('player', 'assets/player.png', 'assets/player.json');
@@ -11,7 +12,6 @@ class GameScene extends Phaser.Scene {
         this.levelLoader.init();
         this.currentLevel = this.levelLoader.create('level01');
         this.player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
-        this.player.speed.x = 24;
     }
     update(time, delta) {
         this.player.update();
@@ -85,6 +85,7 @@ class CollisionManager {
                 this.solveVerticalCollision(tiles[i], actor, result);
             }
         }
+        actor.onCollisionSolved(result);
         return result;
     }
     overlapsNonEmptyTile(tile, actor) {
@@ -131,6 +132,8 @@ class Actor {
     get nextHitbox() {
         return new Phaser.Geom.Rectangle(this.x + this.speed.x * GameTime.getElapsed(), this.y + this.speed.y * GameTime.getElapsed(), this.hitbox.width, this.hitbox.height);
     }
+    get speedDirectionX() { return MathHelper.sign(this.speed.x); }
+    get speedDirectionY() { return MathHelper.sign(this.speed.y); }
     update() {
     }
     moveX() {
@@ -138,6 +141,24 @@ class Actor {
     }
     moveY() {
         this._hitbox.y += this.speed.y * GameTime.getElapsed();
+    }
+    onCollisionSolved(result) {
+    }
+    hasGroundUnderneath(tiles) {
+        for (let i = 0; i < tiles.length; i++) {
+            if (!tiles[i].canStandOn) {
+                continue;
+            }
+            if (this.isStandingOnTile(tiles[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    isStandingOnTile(tile) {
+        if (tile.hitbox.top == this.hitbox.bottom) {
+            return this.hitbox.right > tile.hitbox.left && this.hitbox.left < tile.hitbox.right;
+        }
     }
 }
 class Animator {
@@ -302,6 +323,7 @@ class Tile {
         this.hitbox = hitbox;
         this.sprite = sprite;
     }
+    canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid; }
 }
 class Tilemap {
     constructor(tiles, gridCellsX, gridCellsY, tileWidth, tileHeight) {
@@ -365,12 +387,79 @@ class Tilemap {
 class Player extends Actor {
     constructor(scene, startX, startY) {
         super(new Phaser.Geom.Rectangle(startX, startY, 16, 32));
-        this.playerView = new PlayerView(scene, this);
+        this.view = new PlayerView(scene, this);
+        this.controller = new PlayerController(this);
+        this.initStates();
+    }
+    initStates() {
+        this.groundedState = new PlayerGroundedState(this);
+        this.airborneState = new PlayerAirborneState(this);
+        this.currentState = this.groundedState;
     }
     update() {
+        this.currentState.update();
     }
     lateUpdate() {
-        this.playerView.updatePosition();
+        this.view.updateVisuals();
+    }
+    onCollisionSolved(result) {
+        this.currentState.onCollisionSolved(result);
+    }
+    changeState(newState) {
+        this.currentState.leave();
+        this.currentState = newState;
+        this.currentState.enter();
+    }
+    moveLeft(maxRunSpeed, runAcceleration) {
+        if (this.speed.x > -maxRunSpeed) {
+            this.speed.x = Math.max(this.speed.x - runAcceleration, -maxRunSpeed);
+        }
+        else if (this.speed.x < -maxRunSpeed) {
+            this.speed.x = Math.min(this.speed.x + runAcceleration, -maxRunSpeed);
+        }
+    }
+    moveRight(maxRunSpeed, runAcceleration) {
+        if (this.speed.x < maxRunSpeed) {
+            this.speed.x = Math.min(this.speed.x + runAcceleration, maxRunSpeed);
+        }
+        else if (this.speed.x > maxRunSpeed) {
+            this.speed.x = Math.max(this.speed.x - runAcceleration, maxRunSpeed);
+        }
+    }
+    decelerate(deceleration) {
+        if (Math.abs(this.speed.x) < deceleration) {
+            this.speed.x = 0;
+        }
+        else {
+            this.speed.x -= deceleration * MathHelper.sign(this.speed.x);
+        }
+    }
+    destroy() {
+        this.view.destroy();
+    }
+}
+class PlayerController {
+    constructor(player) {
+        this.player = player;
+    }
+    updateMovementControls(maxRunSpeed = 110, runAcceleration = 24) {
+        if (Inputs.Left.isDown) {
+            this.player.moveLeft(maxRunSpeed, runAcceleration);
+        }
+        else if (Inputs.Right.isDown) {
+            this.player.moveRight(maxRunSpeed, runAcceleration);
+        }
+        else {
+            this.player.decelerate(runAcceleration);
+        }
+        //Temp
+        if (Inputs.Up.isDown && this.player.airborneState != this.player.currentState) {
+            this.jumpCommand();
+        }
+    }
+    jumpCommand() {
+        this.player.speed.y = -320;
+        this.player.changeState(this.player.airborneState);
     }
 }
 /// <reference path="../entities/animator.ts"/>
@@ -389,13 +478,103 @@ class PlayerView {
         this.animator = new Animator(scene, this.sprite, this.player);
         this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
         this.changeAnimation(PlayerAnimations.Run);
-        this.updatePosition();
+        this.updateVisuals();
     }
     changeAnimation(animation) {
         this.animator.changeAnimation(animation.key, animation.isSingleFrame);
     }
-    updatePosition() {
+    updateVisuals() {
         this.sprite.setPosition(this.player.hitbox.centerX, this.player.hitbox.bottom);
+        if (this.player.speedDirectionX == 1) {
+            this.sprite.flipX = false;
+        }
+        else if (this.player.speedDirectionX == -1) {
+            this.sprite.flipX = true;
+        }
+    }
+    destroy() {
+        this.animator.destroy();
+    }
+}
+class PlayerBaseState {
+    constructor(player) {
+        this.player = player;
+    }
+    enter() {
+    }
+    update() {
+    }
+    leave() {
+    }
+    onCollisionSolved(result) {
+    }
+}
+/// <reference path="./player_base_state.ts"/>
+class PlayerAirborneState extends PlayerBaseState {
+    constructor(player) {
+        super(player);
+    }
+    enter() {
+    }
+    update() {
+        this.player.controller.updateMovementControls();
+        this.updateGravity();
+    }
+    leave() {
+    }
+    updateGravity(gravity = 16, maxFallSpeed = 240) {
+        if (this.player.speed.y < maxFallSpeed) {
+            this.player.speed.y = Math.min(this.player.speed.y + gravity, maxFallSpeed);
+        }
+    }
+    onCollisionSolved(result) {
+        if (result.onBottom) {
+            this.player.speed.y = 0;
+            this.player.changeState(this.player.groundedState);
+        }
+    }
+}
+/// <reference path="./player_airborne_state.ts"/>
+class PlayerFallState extends PlayerAirborneState {
+    constructor(player) {
+        super(player);
+    }
+    enter() {
+    }
+    update() {
+    }
+    leave() {
+    }
+}
+/// <reference path="./player_base_state.ts"/>
+class PlayerGroundedState extends PlayerBaseState {
+    constructor(player) {
+        super(player);
+    }
+    enter() {
+    }
+    update() {
+        this.player.controller.updateMovementControls();
+    }
+    leave() {
+    }
+    onCollisionSolved(result) {
+        if (!this.player.hasGroundUnderneath(result.tiles)) {
+            this.player.changeState(this.player.airborneState);
+        }
+    }
+}
+/// <reference path="./player_airborne_state.ts"/>
+class PlayerJumpState extends PlayerAirborneState {
+    constructor(player) {
+        super(player);
+    }
+    enter() {
+        this.player.speed.y = -24;
+    }
+    update() {
+    }
+    leave() {
     }
 }
 var GameTime;
@@ -412,6 +591,16 @@ var GameTime;
 })(GameTime || (GameTime = {}));
 let TILE_WIDTH = 16;
 let TILE_HEIGHT = 16;
+var Inputs;
+(function (Inputs) {
+    function initKeyInputs(scene) {
+        Inputs.Up = scene.input.keyboard.addKey('up');
+        Inputs.Left = scene.input.keyboard.addKey('left');
+        Inputs.Down = scene.input.keyboard.addKey('down');
+        Inputs.Right = scene.input.keyboard.addKey('right');
+    }
+    Inputs.initKeyInputs = initKeyInputs;
+})(Inputs || (Inputs = {}));
 var MathHelper;
 (function (MathHelper) {
     /**

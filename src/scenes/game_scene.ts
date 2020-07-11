@@ -6,6 +6,7 @@ class GameScene extends Phaser.Scene {
 
     init() {
         this.levelLoader = new LevelLoader(this);
+        Inputs.initKeyInputs(this);
     }
 
     preload() {
@@ -20,7 +21,6 @@ class GameScene extends Phaser.Scene {
         this.currentLevel = this.levelLoader.create('level01');
 
         this.player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
-        this.player.speed.x = 24;
     }
 
     update(time:number, delta:number) {
