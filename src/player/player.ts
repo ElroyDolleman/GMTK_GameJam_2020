@@ -9,6 +9,13 @@ class Player extends Actor {
     public groundedState:PlayerGroundedState;
     public airborneState:PlayerAirborneState;
 
+    public get isJumping():boolean {
+        if (this.currentState == this.airborneState) {
+            return this.speed.y < 0;
+        }
+        return false;
+    }
+
     constructor(scene:Phaser.Scene, startX:number, startY:number) {
         super(new Phaser.Geom.Rectangle(startX, startY, 16, 26));
 
