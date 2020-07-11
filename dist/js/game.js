@@ -5,15 +5,20 @@ class GameScene extends Phaser.Scene {
     }
     preload() {
         this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+        this.load.json('commands', 'assets/commands.json');
         this.levelLoader.preloadLevelJson();
         this.levelLoader.preloadSpritesheets();
     }
     create() {
+        let levelName = 'level01';
         this.levelLoader.init();
-        this.currentLevel = this.levelLoader.create('level01');
+        this.currentLevel = this.levelLoader.create(levelName);
         this.player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
+        this.commandManager = new CommandManager(this, levelName);
+        this.commandManager.listenToCommand(commandEvents.jump, this.player.controller.jumpCommand, this.player.controller);
     }
     update(time, delta) {
+        this.commandManager.update();
         this.player.update();
         this.currentLevel.collisionManager.moveActor(this.player);
         this.player.lateUpdate();
@@ -494,6 +499,35 @@ class PlayerView {
     }
     destroy() {
         this.animator.destroy();
+    }
+}
+let commandEvents = {
+    jump: 'jump',
+};
+class CommandManager {
+    constructor(scene, levelName) {
+        this.commandIndex = 0;
+        this.timer = 0;
+        this.commandEventEmitter = new Phaser.Events.EventEmitter();
+        this.levelCommands = scene.cache.json.get('commands')[levelName];
+    }
+    get currentCommand() { return this.levelCommands[this.commandIndex]; }
+    listenToCommand(command, callback, context) {
+        this.commandEventEmitter.addListener(command, callback, context);
+    }
+    update() {
+        this.timer += GameTime.getElapsedMS();
+        if (this.timer >= this.currentCommand.time) {
+            this.timer -= this.currentCommand.time;
+            this.nextCommand();
+            this.commandEventEmitter.emit(this.currentCommand.command);
+        }
+    }
+    nextCommand() {
+        this.commandIndex = (this.commandIndex + 1) % this.levelCommands.length;
+    }
+    destroy() {
+        this.commandEventEmitter.removeAllListeners();
     }
 }
 class PlayerBaseState {
