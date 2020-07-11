@@ -532,6 +532,9 @@ class PlayerAirborneState extends PlayerBaseState {
             this.player.speed.y = 0;
             this.player.changeState(this.player.groundedState);
         }
+        else if (result.onTop) {
+            this.player.speed.y = 0;
+        }
     }
 }
 /// <reference path="./player_airborne_state.ts"/>

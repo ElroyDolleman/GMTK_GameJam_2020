@@ -15,7 +15,7 @@ class PlayerGroundedState extends PlayerBaseState {
     }
 
     public leave() {
-
+        
     }
 
     public onCollisionSolved(result:CollisionResult) {
