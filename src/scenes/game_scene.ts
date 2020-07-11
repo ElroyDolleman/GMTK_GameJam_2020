@@ -62,7 +62,8 @@ class GameScene extends Phaser.Scene {
             setTimeout(this.onDead.bind(this), 800);
         }
         else if (this.currentLevel.won) {
-            this.onWin();
+            this.currentLevel.player.view.changeAnimation(PlayerAnimations.Victory);
+            setTimeout(this.onWin.bind(this), 500);
         }
     }
 

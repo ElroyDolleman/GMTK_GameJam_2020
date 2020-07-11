@@ -7,6 +7,7 @@ module PlayerAnimations
     export let Run = { key: 'walk', isSingleFrame: false };
     export let Jump = { key: 'jump', isSingleFrame: false };
     export let Fall = { key: 'fall', isSingleFrame: false };
+    export let Victory = { key: 'victory', isSingleFrame: false };
 }
 
 class PlayerView {
@@ -31,8 +32,9 @@ class PlayerView {
     private createAnimations(scene:Phaser.Scene) {
         this.animator = new Animator(scene, this.sprite, this.player);
         this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
-        this.animator.createAnimation('jump', this.textureKey, 'player_jump_', 2);
-        this.animator.createAnimation('fall', this.textureKey, 'player_fall_', 2);
+        this.animator.createAnimation('jump', this.textureKey, 'player_jump_', 2, 10);
+        this.animator.createAnimation('fall', this.textureKey, 'player_fall_', 2, 12);
+        this.animator.createAnimation('victory', this.textureKey, 'player_victory_', 8, 16, 0);
 
         let jetFireSprite = scene.add.sprite(0, 0, this.textureKey);
         jetFireSprite.setOrigin(0.5, 0);

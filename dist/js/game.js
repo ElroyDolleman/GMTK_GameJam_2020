@@ -43,7 +43,8 @@ class GameScene extends Phaser.Scene {
             setTimeout(this.onDead.bind(this), 800);
         }
         else if (this.currentLevel.won) {
-            this.onWin();
+            this.currentLevel.player.view.changeAnimation(PlayerAnimations.Victory);
+            setTimeout(this.onWin.bind(this), 500);
         }
     }
     onWin() {
@@ -891,6 +892,7 @@ var PlayerAnimations;
     PlayerAnimations.Run = { key: 'walk', isSingleFrame: false };
     PlayerAnimations.Jump = { key: 'jump', isSingleFrame: false };
     PlayerAnimations.Fall = { key: 'fall', isSingleFrame: false };
+    PlayerAnimations.Victory = { key: 'victory', isSingleFrame: false };
 })(PlayerAnimations || (PlayerAnimations = {}));
 class PlayerView {
     constructor(scene, player) {
@@ -903,8 +905,9 @@ class PlayerView {
     createAnimations(scene) {
         this.animator = new Animator(scene, this.sprite, this.player);
         this.animator.createAnimation('walk', this.textureKey, 'player_walk_', 4);
-        this.animator.createAnimation('jump', this.textureKey, 'player_jump_', 2);
-        this.animator.createAnimation('fall', this.textureKey, 'player_fall_', 2);
+        this.animator.createAnimation('jump', this.textureKey, 'player_jump_', 2, 10);
+        this.animator.createAnimation('fall', this.textureKey, 'player_fall_', 2, 12);
+        this.animator.createAnimation('victory', this.textureKey, 'player_victory_', 8, 16, 0);
         let jetFireSprite = scene.add.sprite(0, 0, this.textureKey);
         jetFireSprite.setOrigin(0.5, 0);
         this.jetFireAnimation = new Animator(scene, jetFireSprite, this.player);
