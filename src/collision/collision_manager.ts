@@ -35,7 +35,7 @@ class CollisionManager {
                 continue;
             }
 
-            if (tiles[i].tiletype == TileType.Solid) {
+            if (tiles[i].isSolid) {
                 this.solveHorizontalCollision(tiles[i], actor, result);
             }
         }
@@ -54,7 +54,7 @@ class CollisionManager {
                 }
             }
 
-            else if (tiles[i].tiletype == TileType.Solid) {
+            else if (tiles[i].isSolid) {
                 this.solveVerticalCollision(tiles[i], actor, result);
             }
         }
@@ -63,15 +63,16 @@ class CollisionManager {
         return result;
     }
 
-    public overlapsSolidTile(actor:Actor):boolean {
+    public getOverlappingSolidTiles(actor:Actor):Tile[] {
         let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
 
         for (let i = 0; i < tiles.length; i++) {
-            if (this.overlapsNonEmptyTile(tiles[i], actor) && tiles[i].tiletype == TileType.Solid) {
-                return true;
+            if (!this.overlapsNonEmptyTile(tiles[i], actor) || !tiles[i].isSolid) {
+                tiles.splice(i, 1);
+                i--;
             }
         }
-        return false;
+        return tiles;
     }
 
     private overlapsNonEmptyTile(tile:Tile, actor:Actor) {

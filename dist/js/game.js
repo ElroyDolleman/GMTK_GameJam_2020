@@ -1,7 +1,9 @@
+//let elroy:Phaser.Scene;
 class GameScene extends Phaser.Scene {
     init() {
         this.levelLoader = new LevelLoader(this);
         Inputs.initKeyInputs(this);
+        //elroy = this;
     }
     preload() {
         this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
@@ -104,7 +106,7 @@ class CollisionManager {
             if (!this.overlapsNonEmptyTile(tiles[i], actor)) {
                 continue;
             }
-            if (tiles[i].tiletype == TileType.Solid) {
+            if (tiles[i].isSolid) {
                 this.solveHorizontalCollision(tiles[i], actor, result);
             }
         }
@@ -119,21 +121,23 @@ class CollisionManager {
                     actor.hitbox.y = tiles[i].hitbox.y - actor.hitbox.height;
                 }
             }
-            else if (tiles[i].tiletype == TileType.Solid) {
+            else if (tiles[i].isSolid) {
                 this.solveVerticalCollision(tiles[i], actor, result);
             }
         }
         actor.onCollisionSolved(result);
         return result;
     }
-    overlapsSolidTile(actor) {
+    getOverlappingSolidTiles(actor) {
         let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
         for (let i = 0; i < tiles.length; i++) {
-            if (this.overlapsNonEmptyTile(tiles[i], actor) && tiles[i].tiletype == TileType.Solid) {
-                return true;
+            if (!this.overlapsNonEmptyTile(tiles[i], actor) || !tiles[i].isSolid) {
+                tiles.splice(i, 1);
+                i--;
             }
         }
-        return false;
+        console.log(tiles);
+        return tiles;
     }
     overlapsNonEmptyTile(tile, actor) {
         return tile.tiletype != TileType.Empty && Phaser.Geom.Rectangle.Overlaps(tile.hitbox, actor.hitbox);
@@ -443,7 +447,13 @@ class Level {
             let projectile = this.projectiles[i];
             projectile.moveX();
             projectile.moveY();
-            if (this.collisionManager.overlapsSolidTile(projectile)) {
+            let tiles = this.collisionManager.getOverlappingSolidTiles(projectile);
+            if (tiles.length > 0) {
+                tiles.forEach(tile => {
+                    if (tile.tiletype == TileType.Breakable) {
+                        tile.break();
+                    }
+                });
                 this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
@@ -500,6 +510,9 @@ class LevelGoal extends Actor {
         this.goalAnimator.destroy();
     }
 }
+const FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+const FLIPPED_VERTICALLY_FLAG = 0x40000000;
+const FLIPPED_DIAGONALLY_FLAG = 0x20000000;
 class LevelLoader {
     constructor(scene) {
         this.scene = scene;
@@ -526,13 +539,20 @@ class LevelLoader {
         let tiles = [];
         for (let i = 0; i < tilesData.length; i++) {
             let tileId = tilesData[i];
+            let rotation = 0;
+            if (tileId >= FLIPPED_DIAGONALLY_FLAG) {
+                rotation = this.getRotation(tileId);
+                tileId &= ~(FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG);
+            }
             let cellX = i % gridCellsX;
             let cellY = Math.floor(i / gridCellsX);
             let posX = cellX * TILE_WIDTH;
             let posY = cellY * TILE_HEIGHT;
-            let sprite = this.makeSprite(tileId, posX, posY, levelJson['tileset_name']);
+            let sprite = this.makeSprite(tileId, posX, posY, rotation, levelJson['tileset_name']);
             let tileType = this.getTileType(tilesetJson, tileId);
-            let hitbox = new Phaser.Geom.Rectangle(posX, posY, TILE_WIDTH, TILE_HEIGHT);
+            let hitboxData = tilesetJson['customHitboxes'][tileId.toString()];
+            let hitbox = this.getHitbox(hitboxData, posX, posY, rotation);
+            //let hitbox = new Phaser.Geom.Rectangle(posX, posY, width, height);
             tiles.push(new Tile(sprite, tileType, cellX, cellY, posX, posY, hitbox));
         }
         return new Tilemap(tiles, gridCellsX, gridCellsY, TILE_WIDTH, TILE_HEIGHT);
@@ -543,12 +563,13 @@ class LevelLoader {
             entities: levelJson['entities'][0]
         };
     }
-    makeSprite(tileId, posX, posY, tilesetName) {
+    makeSprite(tileId, posX, posY, rotation, tilesetName) {
         if (tileId < 0) {
             return null;
         }
         let sprite = this.scene.add.sprite(posX + TILE_WIDTH / 2, posY + TILE_WIDTH / 2, tilesetName, tileId);
         sprite.setOrigin(0.5, 0.5);
+        sprite.setRotation(rotation);
         return sprite;
     }
     getTileType(tilesetJson, tileId) {
@@ -562,7 +583,71 @@ class LevelLoader {
         if (tiletypes['semisolid'].indexOf(tileId) >= 0) {
             return TileType.SemiSolid;
         }
+        if (tiletypes['spikes'].indexOf(tileId) >= 0) {
+            return TileType.Hazard;
+        }
+        if (tiletypes['breakable'].indexOf(tileId) >= 0) {
+            return TileType.Breakable;
+        }
         return TileType.Empty;
+    }
+    getRotation(tileId) {
+        let flippedH = (tileId & FLIPPED_HORIZONTALLY_FLAG) > 0;
+        let flippedV = (tileId & FLIPPED_VERTICALLY_FLAG) > 0;
+        let flippedD = (tileId & FLIPPED_DIAGONALLY_FLAG) > 0;
+        if (!flippedH && flippedV && flippedD) {
+            return 1.5 * Math.PI; //270
+        }
+        else if (!flippedH && !flippedV && flippedD) {
+            return 0.5 * Math.PI; // 90
+        }
+        else if (flippedV && !flippedD) {
+            return Math.PI;
+        }
+        console.warn("the tileId is stored as if it has been rotated/flipped, but the code does not recognize it");
+        return 0;
+    }
+    getHitbox(hitboxData, posX, posY, rotation) {
+        let width = TILE_WIDTH;
+        let height = TILE_HEIGHT;
+        let hitbox = new Phaser.Geom.Rectangle(posX, posY, width, height);
+        if (!hitboxData)
+            return hitbox;
+        if (hitboxData['x'])
+            hitbox.x += hitboxData['x'];
+        if (hitboxData['y'])
+            hitbox.y += hitboxData['y'];
+        if (hitboxData['width'])
+            hitbox.width = hitboxData['width'];
+        if (hitboxData['height'])
+            hitbox.height = hitboxData['height'];
+        return this.rotateHitbox(hitbox, rotation);
+    }
+    rotateHitbox(hitbox, rotation) {
+        if (rotation == 0)
+            return hitbox;
+        let offsetY = TILE_HEIGHT - hitbox.height;
+        let degree = Phaser.Math.RadToDeg(rotation);
+        switch (degree) {
+            case -90:
+            case 270:
+                hitbox.x += offsetY;
+                hitbox.width = TILE_HEIGHT - offsetY;
+                hitbox.y -= offsetY;
+                hitbox.height = TILE_HEIGHT;
+                break;
+            case 90:
+            case -270:
+                hitbox.width = TILE_HEIGHT - offsetY;
+                hitbox.y -= offsetY;
+                hitbox.height = TILE_HEIGHT;
+                break;
+            case 180:
+            case -180:
+                hitbox.y -= offsetY;
+                break;
+        }
+        return hitbox;
     }
 }
 var TileType;
@@ -570,8 +655,11 @@ var TileType;
     TileType[TileType["Empty"] = 0] = "Empty";
     TileType[TileType["Solid"] = 1] = "Solid";
     TileType[TileType["SemiSolid"] = 2] = "SemiSolid";
+    TileType[TileType["Hazard"] = 3] = "Hazard";
+    TileType[TileType["Breakable"] = 4] = "Breakable";
 })(TileType || (TileType = {}));
 class Tile {
+    //private debug:Phaser.GameObjects.Graphics;
     constructor(sprite, tiletype, cellX, cellY, posX, posY, hitbox) {
         this.position = new Phaser.Geom.Point(posX, posY);
         this.cellX = cellX;
@@ -579,8 +667,17 @@ class Tile {
         this.tiletype = tiletype;
         this.hitbox = hitbox;
         this.sprite = sprite;
+        // if (this.sprite) {
+        //     this.debug = elroy.add.graphics({ fillStyle: { color: 0xFF, alpha: 1 } });
+        //     this.debug.fillRectShape(hitbox);
+        // }
     }
-    get canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid; }
+    get isSolid() { return this.tiletype == TileType.Solid || this.tiletype == TileType.Breakable; }
+    get canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid || this.tiletype == TileType.Breakable; }
+    break() {
+        this.tiletype = TileType.Empty;
+        this.sprite.destroy();
+    }
     destroy() {
         if (this.sprite) {
             this.sprite.destroy();
@@ -1010,7 +1107,6 @@ var Inputs;
     }
     Inputs.initKeyInputs = initKeyInputs;
 })(Inputs || (Inputs = {}));
-//let elroy:Phaser.Scene;
 var MathHelper;
 (function (MathHelper) {
     /**

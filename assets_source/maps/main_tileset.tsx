@@ -173,7 +173,7 @@
  </tile>
  <tile id="34">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="semisolid"/>
   </properties>
  </tile>
  <tile id="35">
@@ -183,7 +183,9 @@
  </tile>
  <tile id="36">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="spikes"/>
+   <property name="hitbox_height" type="int" value="4"/>
+   <property name="hitbox_y" type="int" value="12"/>
   </properties>
  </tile>
  <tile id="37">
@@ -323,7 +325,7 @@
  </tile>
  <tile id="64">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="breakable"/>
   </properties>
  </tile>
  <tile id="65">

@@ -59,7 +59,14 @@ class Level
             projectile.moveX();
             projectile.moveY();
 
-            if (this.collisionManager.overlapsSolidTile(projectile)) {
+            let tiles = this.collisionManager.getOverlappingSolidTiles(projectile);
+            if (tiles.length > 0) {
+                tiles.forEach(tile => {
+                    if (tile.tiletype == TileType.Breakable) {
+                        tile.break();
+                    }
+                });
+
                 this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);

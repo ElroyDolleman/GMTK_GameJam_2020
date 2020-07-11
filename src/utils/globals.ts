@@ -14,5 +14,3 @@ module Inputs {
         Inputs.Right = scene.input.keyboard.addKey('right');
     }
 }
-
-//let elroy:Phaser.Scene;

@@ -1,3 +1,5 @@
+//let elroy:Phaser.Scene;
+
 class GameScene extends Phaser.Scene {
 
     private commandManager:CommandManager
@@ -8,6 +10,8 @@ class GameScene extends Phaser.Scene {
     init() {
         this.levelLoader = new LevelLoader(this);
         Inputs.initKeyInputs(this);
+
+        //elroy = this;
     }
 
     preload() {
