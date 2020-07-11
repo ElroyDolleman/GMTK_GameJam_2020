@@ -63,6 +63,17 @@ class CollisionManager {
         return result;
     }
 
+    public overlapsSolidTile(actor:Actor):boolean {
+        let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
+
+        for (let i = 0; i < tiles.length; i++) {
+            if (this.overlapsNonEmptyTile(tiles[i], actor) && tiles[i].tiletype == TileType.Solid) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private overlapsNonEmptyTile(tile:Tile, actor:Actor) {
         return tile.tiletype != TileType.Empty && Phaser.Geom.Rectangle.Overlaps(tile.hitbox, actor.hitbox);
     }

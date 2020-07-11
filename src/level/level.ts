@@ -10,6 +10,7 @@ class Level
 
     public explosions:Explosion[];
     public explosionsPool:Explosion[];
+    public projectiles:Projectile[];
 
     constructor(scene:Phaser.Scene, map:Tilemap, playerSpawn:any, goalPos:any) {
         this.map = map;
@@ -21,6 +22,7 @@ class Level
 
         this.explosions = [];
         this.explosionsPool = [];
+        this.projectiles = [];
 
         this.won = false;
     }
@@ -37,6 +39,7 @@ class Level
         this.goal.update();
         this.player.lateUpdate();
 
+        // Explosions
         for (let i = 0; i < this.explosions.length; i++) {
             if (this.explosions[i].dead) {
                 this.explosionsPool.push(this.explosions[i]);
@@ -47,6 +50,22 @@ class Level
                 if (this.explosions[i].overlaps(this.player)) {
                     console.log("hit by explosion!");
                 }
+            }
+        }
+
+        // Projectiles
+        console.log(this.projectiles.length);
+        for (let i = 0; i < this.projectiles.length; i++) {
+            let projectile = this.projectiles[i];
+            projectile.moveX();
+            projectile.moveY();
+
+            if (this.collisionManager.overlapsSolidTile(projectile)) {
+                console.log("projecttile hit");
+                this.addExplosion(projectile.x, projectile.y);
+                projectile.destroy();
+                this.projectiles.splice(i, 1);
+                i--;
             }
         }
     }
@@ -60,6 +79,15 @@ class Level
         else {
             this.explosions.push(new Explosion(this.scene, x, y, 6));
         }
+    }
+
+    public addProjectile(props:any, x:number, y:number, speedX:number, speedY:number) {
+        let sprite = this.scene.add.sprite(x, y, props.texture, props.frame);
+        let projectile = new Projectile(sprite, x, y, props.width, props.height);
+        projectile.speed.x = speedX;
+        projectile.speed.y = speedY;
+        
+        this.projectiles.push(projectile);
     }
 
     public destroy() {

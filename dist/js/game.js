@@ -125,6 +125,15 @@ class CollisionManager {
         actor.onCollisionSolved(result);
         return result;
     }
+    overlapsSolidTile(actor) {
+        let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
+        for (let i = 0; i < tiles.length; i++) {
+            if (this.overlapsNonEmptyTile(tiles[i], actor) && tiles[i].tiletype == TileType.Solid) {
+                return true;
+            }
+        }
+        return false;
+    }
     overlapsNonEmptyTile(tile, actor) {
         return tile.tiletype != TileType.Empty && Phaser.Geom.Rectangle.Overlaps(tile.hitbox, actor.hitbox);
     }
@@ -152,6 +161,15 @@ class CollisionManager {
         }
     }
 }
+var ProjectileTypes;
+(function (ProjectileTypes) {
+    ProjectileTypes.playerRocket = {
+        texture: 'player_sheet',
+        frame: 'rocket_00.png',
+        width: 14,
+        height: 5,
+    };
+})(ProjectileTypes || (ProjectileTypes = {}));
 class ScreenTransition {
     constructor(scene) {
         this.scene = scene;
@@ -356,6 +374,24 @@ class Explosion extends Actor {
         this.animation.destroy();
     }
 }
+class Projectile extends Actor {
+    constructor(sprite, x, y, width, height) {
+        super(new Phaser.Geom.Rectangle(x, y, width, height));
+        this.sprite = sprite;
+        sprite.setOrigin(0.5, 0.5);
+    }
+    moveX() {
+        super.moveX();
+        this.sprite.x = this.hitbox.centerX;
+    }
+    moveY() {
+        super.moveY();
+        this.sprite.y = this.hitbox.centerY;
+    }
+    destroy() {
+        this.sprite.destroy();
+    }
+}
 class Level {
     constructor(scene, map, playerSpawn, goalPos) {
         this.map = map;
@@ -365,13 +401,11 @@ class Level {
         this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
         this.explosions = [];
         this.explosionsPool = [];
+        this.projectiles = [];
         this.won = false;
         setTimeout(() => {
-            this.addExplosion(this.player.x, this.player.y);
+            this.addProjectile(ProjectileTypes.playerRocket, this.player.x, this.player.y, 120, 0);
         }, 3000);
-        setTimeout(() => {
-            this.addExplosion(this.player.x, this.player.y);
-        }, 6000);
     }
     update() {
         this.player.update();
@@ -381,6 +415,7 @@ class Level {
         }
         this.goal.update();
         this.player.lateUpdate();
+        // Explosions
         for (let i = 0; i < this.explosions.length; i++) {
             if (this.explosions[i].dead) {
                 this.explosionsPool.push(this.explosions[i]);
@@ -393,18 +428,37 @@ class Level {
                 }
             }
         }
+        // Projectiles
+        console.log(this.projectiles.length);
+        for (let i = 0; i < this.projectiles.length; i++) {
+            let projectile = this.projectiles[i];
+            projectile.moveX();
+            projectile.moveY();
+            if (this.collisionManager.overlapsSolidTile(projectile)) {
+                console.log("projecttile hit");
+                this.addExplosion(projectile.x, projectile.y);
+                projectile.destroy();
+                this.projectiles.splice(i, 1);
+                i--;
+            }
+        }
     }
     addExplosion(x, y) {
         if (this.explosionsPool.length > 0) {
             let explosion = this.explosionsPool.pop();
             explosion.replay(x, y, 6);
             this.explosions.push(explosion);
-            console.log('reuse');
         }
         else {
             this.explosions.push(new Explosion(this.scene, x, y, 6));
-            console.log('new');
         }
+    }
+    addProjectile(props, x, y, speedX, speedY) {
+        let sprite = this.scene.add.sprite(x, y, props.texture, props.frame);
+        let projectile = new Projectile(sprite, x, y, props.width, props.height);
+        projectile.speed.x = speedX;
+        projectile.speed.y = speedY;
+        this.projectiles.push(projectile);
     }
     destroy() {
         this.map.destroy();
