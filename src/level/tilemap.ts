@@ -69,10 +69,9 @@ class Tilemap {
     }
 
     public destroy() {
-        // while (this.tiles.length > 0) {
-        //     this.tiles[0].destroy();
-        //     this.tiles.splice(0, 1);
-        // }
-        this.tiles.splice(0, this.tiles.length);
+        while (this.tiles.length > 0) {
+            this.tiles[0].destroy();
+            this.tiles.splice(0, 1);
+        }
     }
 }

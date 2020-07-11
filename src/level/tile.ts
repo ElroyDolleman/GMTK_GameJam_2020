@@ -24,4 +24,10 @@ class Tile
         this.hitbox = hitbox;
         this.sprite = sprite;
     }
+
+    public destroy() {
+        if (this.sprite) {
+            this.sprite.destroy();
+        }
+    }
 }

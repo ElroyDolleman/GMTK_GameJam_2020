@@ -12,18 +12,40 @@ class GameScene extends Phaser.Scene {
         this.levelLoader.preloadSpritesheets();
     }
     create() {
-        let levelName = 'level01';
         this.levelLoader.init();
+        this.screenTransition = new ScreenTransition(this);
+        this.screenTransition.onLevelEnter();
+        this.startLevel();
+    }
+    startLevel(levelName = 'level01') {
         this.currentLevel = this.levelLoader.create(levelName);
         this.commandManager = new CommandManager(this, levelName);
         this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
     }
     update(time, delta) {
         if (this.currentLevel.won) {
+            this.winUpdate();
+            return;
+        }
+        else if (this.screenTransition.active) {
             return;
         }
         this.commandManager.update();
         this.currentLevel.update();
+        if (this.currentLevel.won) {
+            this.onWin();
+        }
+    }
+    onWin() {
+        this.screenTransition.onLevelClose(this.endLevel, this);
+    }
+    winUpdate() {
+    }
+    endLevel() {
+        this.commandManager.destroy();
+        this.currentLevel.destroy();
+        this.screenTransition.onLevelEnter();
+        this.startLevel();
     }
     destroy() {
         this.currentLevel.destroy();
@@ -129,6 +151,57 @@ class CollisionManager {
     }
 }
 class ScreenTransition {
+    constructor(scene) {
+        this.scene = scene;
+        this.createGraphics();
+    }
+    get active() { return this.graphics.visible; }
+    ;
+    createGraphics() {
+        this.graphics = this.scene.add.graphics({ lineStyle: { width: 2, color: 0x0 }, fillStyle: { color: 0x0, alpha: 1 } });
+        this.graphics.depth = 69;
+        this.graphics.clear();
+        let left = -10;
+        let right = 380;
+        let points = [{ x: left, y: 0 }];
+        for (let y = 320 / 8; y <= 320; y += 320 / 8) {
+            points.push({ x: left, y });
+            left -= 20;
+            points.push({ x: left, y });
+        }
+        for (let y = 320; y >= 0; y -= 320 / 8) {
+            points.push({ x: right, y });
+            right += 20;
+            points.push({ x: right, y });
+        }
+        this.graphics.fillPoints(points);
+        this.graphics.x = 0;
+    }
+    onLevelEnter() {
+        this.scene.tweens.add({
+            targets: this.graphics,
+            props: {
+                x: { value: -560, duration: 1000, ease: 'Linear' },
+            },
+            onComplete: this.onEnterComplete.bind(this)
+        });
+    }
+    onEnterComplete() {
+        this.graphics.x = 560;
+        this.graphics.setVisible(false);
+    }
+    onLevelClose(onDone, context) {
+        this.graphics.setVisible(true);
+        this.scene.tweens.add({
+            targets: this.graphics,
+            props: {
+                x: { value: 0, duration: 1000, ease: 'Linear' },
+            },
+            onComplete: onDone.bind(context)
+        });
+    }
+    update() {
+    }
 }
 class Actor {
     constructor(hitbox) {
@@ -253,8 +326,8 @@ class Level {
     constructor(scene, map, playerSpawn, goalPos) {
         this.map = map;
         this.collisionManager = new CollisionManager(this);
-        this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
+        this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
         this.won = false;
     }
     update() {
@@ -268,6 +341,8 @@ class Level {
     }
     destroy() {
         this.map.destroy();
+        this.goal.destroy();
+        this.player.destroy();
     }
 }
 class LevelGoal extends Actor {
@@ -282,9 +357,8 @@ class LevelGoal extends Actor {
         this.goalAnimator.updatePosition();
     }
     overlaps(actor) {
-        /*return Phaser.Math.Difference(this.hitbox.centerX, actor.hitbox.centerX) < 12 &&
-            Phaser.Math.Difference(this.hitbox.bottom, actor.hitbox.bottom) < 12;*/
-        return Phaser.Geom.Rectangle.Overlaps(this.hitbox, actor.hitbox);
+        return Phaser.Math.Difference(this.hitbox.bottom, actor.hitbox.bottom) == 0 &&
+            Phaser.Geom.Rectangle.Overlaps(this.hitbox, actor.hitbox);
     }
     destroy() {
         this.goalAnimator.destroy();
@@ -371,6 +445,11 @@ class Tile {
         this.sprite = sprite;
     }
     canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid; }
+    destroy() {
+        if (this.sprite) {
+            this.sprite.destroy();
+        }
+    }
 }
 class Tilemap {
     constructor(tiles, gridCellsX, gridCellsY, tileWidth, tileHeight) {
@@ -423,11 +502,10 @@ class Tilemap {
         return new Phaser.Geom.Point(this.toWorldX(cellX), this.toWorldY(cellY));
     }
     destroy() {
-        // while (this.tiles.length > 0) {
-        //     this.tiles[0].destroy();
-        //     this.tiles.splice(0, 1);
-        // }
-        this.tiles.splice(0, this.tiles.length);
+        while (this.tiles.length > 0) {
+            this.tiles[0].destroy();
+            this.tiles.splice(0, 1);
+        }
     }
 }
 /// <reference path="../entities/actor.ts"/>
@@ -575,6 +653,7 @@ class CommandManager {
     }
     destroy() {
         this.commandEventEmitter.removeAllListeners();
+        this.view.destroy();
     }
 }
 class CommandView {
@@ -617,6 +696,9 @@ class CommandView {
     }
     convertTimeToXPos(time) {
         return time / 8;
+    }
+    destroy() {
+        this.container.destroy();
     }
 }
 class PlayerBaseState {

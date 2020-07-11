@@ -3,6 +3,7 @@ class GameScene extends Phaser.Scene {
     private commandManager:CommandManager
     private levelLoader:LevelLoader;
     private currentLevel:Level;
+    private screenTransition:ScreenTransition;
 
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -20,11 +21,17 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-        let levelName = 'level01';
-
         this.levelLoader.init();
+
+        this.screenTransition = new ScreenTransition(this);
+        this.screenTransition.onLevelEnter();
+
+        this.startLevel();
+    }
+
+    startLevel(levelName = 'level01') {
         this.currentLevel = this.levelLoader.create(levelName);
-        
+
         this.commandManager = new CommandManager(this, levelName);
         this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
     }
@@ -32,6 +39,9 @@ class GameScene extends Phaser.Scene {
     update(time:number, delta:number) {
         if (this.currentLevel.won) {
             this.winUpdate();
+            return;
+        }
+        else if (this.screenTransition.active) {
             return;
         }
 
@@ -44,10 +54,17 @@ class GameScene extends Phaser.Scene {
     }
 
     onWin() {
-
+        this.screenTransition.onLevelClose(this.endLevel, this);
     }
     winUpdate() {
 
+    }
+    endLevel() {
+        this.commandManager.destroy();
+        this.currentLevel.destroy();
+        this.screenTransition.onLevelEnter();
+
+        this.startLevel();
     }
 
     destroy() {

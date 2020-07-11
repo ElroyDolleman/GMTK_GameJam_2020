@@ -54,4 +54,8 @@ class CommandView {
     public convertTimeToXPos(time:number) {
         return time / 8;
     }
+
+    public destroy() {
+        this.container.destroy();
+    }
 }

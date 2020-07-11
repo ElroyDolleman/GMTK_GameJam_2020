@@ -11,8 +11,8 @@ class Level
         this.map = map;
         this.collisionManager = new CollisionManager(this);
 
-        this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
         this.goal = new LevelGoal(scene, goalPos.x, goalPos.y);
+        this.player = new Player(scene, playerSpawn.x, playerSpawn.y);
 
         this.won = false;
     }
@@ -32,5 +32,7 @@ class Level
 
     public destroy() {
         this.map.destroy();
+        this.goal.destroy();
+        this.player.destroy();
     }
 }

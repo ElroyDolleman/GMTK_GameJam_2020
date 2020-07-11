@@ -19,9 +19,9 @@ class LevelGoal extends Actor {
     }
 
     public overlaps(actor:Actor) {
-        /*return Phaser.Math.Difference(this.hitbox.centerX, actor.hitbox.centerX) < 12 &&
-            Phaser.Math.Difference(this.hitbox.bottom, actor.hitbox.bottom) < 12;*/
-        return Phaser.Geom.Rectangle.Overlaps(this.hitbox, actor.hitbox);
+        return Phaser.Math.Difference(this.hitbox.bottom, actor.hitbox.bottom) == 0 &&
+            Phaser.Geom.Rectangle.Overlaps(this.hitbox, actor.hitbox);
+        
     }
 
     public destroy() {

@@ -46,5 +46,6 @@ class CommandManager {
 
     public destroy() {
         this.commandEventEmitter.removeAllListeners();
+        this.view.destroy();
     }
 }
