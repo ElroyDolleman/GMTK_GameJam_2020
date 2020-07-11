@@ -67,6 +67,8 @@ class PlayerView {
         else if (this.jetFireAnimation.sprite.visible) {
             this.jetFireAnimation.sprite.setVisible(false);
         }
+
+        this.animator.update();
     }
 
     private updateJetVisuals() {

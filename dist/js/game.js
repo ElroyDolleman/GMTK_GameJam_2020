@@ -940,6 +940,7 @@ class PlayerView {
         else if (this.jetFireAnimation.sprite.visible) {
             this.jetFireAnimation.sprite.setVisible(false);
         }
+        this.animator.update();
     }
     updateJetVisuals() {
         if (!this.jetFireAnimation.sprite.visible) {
@@ -1077,6 +1078,7 @@ class PlayerAirborneState extends PlayerBaseState {
     onCollisionSolved(result) {
         if (result.onBottom) {
             this.player.speed.y = 0;
+            this.player.view.animator.squish(1, 0.9, 100);
             this.player.changeState(this.player.groundedState);
         }
         else if (result.onTop) {

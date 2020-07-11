@@ -34,6 +34,7 @@ class PlayerAirborneState extends PlayerBaseState {
     public onCollisionSolved(result:CollisionResult) {
         if (result.onBottom) {
             this.player.speed.y = 0;
+            this.player.view.animator.squish(1, 0.9, 100);
             this.player.changeState(this.player.groundedState);
         }
         else if (result.onTop) {
