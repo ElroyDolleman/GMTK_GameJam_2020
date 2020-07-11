@@ -33,6 +33,5 @@ class PlayerView {
 
     public updatePosition() {
         this.sprite.setPosition(this.player.hitbox.centerX, this.player.hitbox.bottom);
-        console.log(this.player.hitbox.bottom);
     }
 }

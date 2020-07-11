@@ -10,6 +10,10 @@ class Player extends Actor {
     }
 
     update() {
+        
+    }
+
+    lateUpdate() {
         this.playerView.updatePosition();
     }
 }

@@ -19,7 +19,7 @@ class LevelLoader {
 
     public create(name:string) {
         let levelJson = this.jsonData[name];
-        let tilesetJson = this.jsonData[levelJson['tileset_name']];
+        let tilesetJson = this.jsonData['tilesets_data'][levelJson['tileset_name']];
 
         return new Level(
             this.createTilemap(levelJson, tilesetJson),
@@ -47,9 +47,10 @@ class LevelLoader {
             let posY:number = cellY * TILE_HEIGHT;
 
             let sprite = this.makeSprite(tileId, posX, posY, levelJson['tileset_name']);
+            let tileType = this.getTileType(tilesetJson, tileId);
 
             let hitbox = new Phaser.Geom.Rectangle(posX, posY, TILE_WIDTH, TILE_HEIGHT);
-            tiles.push(new Tile(sprite, TileType.Empty, cellX, cellY, posX, posY, hitbox));
+            tiles.push(new Tile(sprite, tileType, cellX, cellY, posX, posY, hitbox));
         }
         return new Tilemap(tiles, gridCellsX, gridCellsY, TILE_WIDTH, TILE_HEIGHT);
     }
@@ -68,5 +69,19 @@ class LevelLoader {
         let sprite = this.scene.add.sprite(posX + TILE_WIDTH / 2, posY + TILE_WIDTH / 2, tilesetName, tileId);
         sprite.setOrigin(0.5, 0.5);
         return sprite;
+    }
+
+    private getTileType(tilesetJson:any, tileId:number):TileType {
+        if (tileId < 0) {
+            return TileType.Empty;
+        }
+        let tiletypes = tilesetJson['tiletypes'];
+        if (tiletypes['solid'].indexOf(tileId) >= 0) {
+            return TileType.Solid;
+        }
+        if (tiletypes['semisolid'].indexOf(tileId) >= 0) {
+            return TileType.SemiSolid;
+        }
+        return TileType.Empty;
     }
 }

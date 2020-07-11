@@ -37,6 +37,7 @@ for filename in os.listdir(directory):
     if tileset_name not in json_tilesets:
         json_tilesets[tileset_name] = {}
         current = json_tilesets[tileset_name]
+        tiletypes_obj = {}
 
         custom_hitboxes = {}
         tile_id = -1
@@ -51,14 +52,13 @@ for filename in os.listdir(directory):
                 result = re.search('<tile id="(.*)">', line)
                 tile_id = int(result.group(1))
 
-            elif '"tiletype"' in line:
+            elif '"TileType"' in line:
                 result = re.search('value="(.*)"/>', line)
                 tiletype = result.group(1)
                 if len(tiletype) > 0:
-                    tiletype = tiletype + '_tiles'
-                    if tiletype not in current:
-                        current[tiletype] = []
-                    current[tiletype].append(tile_id)
+                    if tiletype not in tiletypes_obj:
+                        tiletypes_obj[tiletype] = []
+                    tiletypes_obj[tiletype].append(tile_id)
 
             elif 'hitbox' in line:
                 if not str(tile_id) in custom_hitboxes:
@@ -73,6 +73,7 @@ for filename in os.listdir(directory):
                     custom_hitboxes[str(tile_id)]['height'] = int(line.split('value="', 1)[1].replace('"/>', ''))
         
         current['customHitboxes'] = custom_hitboxes
+        current['tiletypes'] = tiletypes_obj
     tileset_file.close()
 
     tiles = []

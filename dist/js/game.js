@@ -10,9 +10,13 @@ class GameScene extends Phaser.Scene {
     create() {
         this.levelLoader.init();
         this.currentLevel = this.levelLoader.create('level01');
-        let player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
+        this.player = new Player(this, this.currentLevel.playerSpawn.x, this.currentLevel.playerSpawn.y);
+        this.player.speed.x = 24;
     }
     update(time, delta) {
+        this.player.update();
+        this.currentLevel.collisionManager.moveActor(this.player);
+        this.player.lateUpdate();
     }
     destroy() {
         this.currentLevel.destroy();
@@ -27,7 +31,7 @@ let config = {
     pixelArt: true,
     backgroundColor: '#5d5bff',
     title: "GMTK Game Jam 2020",
-    version: "0.2.1",
+    version: "0.0.0",
     disableContextMenu: true,
     scene: [GameScene],
     fps: {
@@ -37,10 +41,81 @@ let config = {
     },
 };
 let game = new Phaser.Game(config);
+class CollisionResult {
+    constructor() {
+        this.onTop = false;
+        this.onLeft = false;
+        this.onRight = false;
+        this.onBottom = false;
+        this.tiles = [];
+        this.prevTop = 0;
+        this.prevLeft = 0;
+        this.prevRight = 0;
+        this.prevBottom = 0;
+        this.isCrushed = false;
+        this.isDamaged = false;
+    }
+}
+class CollisionManager {
+    constructor(level) {
+        this.currentLevel = level;
+    }
+    moveActor(actor) {
+        let result = new CollisionResult();
+        let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
+        result.prevTop = actor.hitbox.top;
+        result.prevLeft = actor.hitbox.left;
+        result.prevRight = actor.hitbox.right;
+        result.prevBottom = actor.hitbox.bottom;
+        actor.moveX();
+        for (let i = 0; i < tiles.length; i++) {
+            if (!this.overlapsNonEmptyTile(tiles[i], actor)) {
+                continue;
+            }
+            if (tiles[i].tiletype == TileType.Solid) {
+                this.solveHorizontalCollision(tiles[i], actor, result);
+            }
+        }
+        actor.moveY();
+        for (let i = 0; i < tiles.length; i++) {
+            if (!this.overlapsNonEmptyTile(tiles[i], actor)) {
+                continue;
+            }
+            if (tiles[i].tiletype == TileType.Solid) {
+                this.solveVerticalCollision(tiles[i], actor, result);
+            }
+        }
+        return result;
+    }
+    overlapsNonEmptyTile(tile, actor) {
+        return tile.tiletype != TileType.Empty && Phaser.Geom.Rectangle.Overlaps(tile.hitbox, actor.hitbox);
+    }
+    solveHorizontalCollision(tile, actor, result) {
+        if (actor.speed.x > 0) {
+            result.onRight = true;
+            actor.hitbox.x = tile.hitbox.x - actor.hitbox.width;
+        }
+        else if (actor.speed.x < 0) {
+            result.onLeft = true;
+            actor.hitbox.x = tile.hitbox.right;
+        }
+    }
+    solveVerticalCollision(tile, actor, result) {
+        if (actor.speed.y > 0) {
+            result.onBottom = true;
+            actor.hitbox.y = tile.hitbox.y - actor.hitbox.height;
+        }
+        else if (actor.speed.y < 0) {
+            result.onTop = true;
+            actor.hitbox.y = tile.hitbox.bottom;
+        }
+    }
+}
 class ScreenTransition {
 }
 class Actor {
     constructor(hitbox) {
+        this.speed = new Phaser.Math.Vector2();
         this._hitbox = hitbox;
     }
     get position() {
@@ -53,13 +128,16 @@ class Actor {
     get hitbox() {
         return this._hitbox;
     }
+    get nextHitbox() {
+        return new Phaser.Geom.Rectangle(this.x + this.speed.x * GameTime.getElapsed(), this.y + this.speed.y * GameTime.getElapsed(), this.hitbox.width, this.hitbox.height);
+    }
     update() {
     }
-    moveX(amount) {
-        this._hitbox.x += amount;
+    moveX() {
+        this._hitbox.x += this.speed.x * GameTime.getElapsed();
     }
-    moveY(amount) {
-        this._hitbox.y += amount;
+    moveY() {
+        this._hitbox.y += this.speed.y * GameTime.getElapsed();
     }
 }
 class Animator {
@@ -137,6 +215,7 @@ class Animator {
 class Level {
     constructor(map, playerSpawn) {
         this.map = map;
+        this.collisionManager = new CollisionManager(this);
         this.playerSpawn = new Phaser.Geom.Point(playerSpawn.x, playerSpawn.y);
     }
     destroy() {
@@ -158,7 +237,7 @@ class LevelLoader {
     }
     create(name) {
         let levelJson = this.jsonData[name];
-        let tilesetJson = this.jsonData[levelJson['tileset_name']];
+        let tilesetJson = this.jsonData['tilesets_data'][levelJson['tileset_name']];
         return new Level(this.createTilemap(levelJson, tilesetJson), levelJson['player_spawn']);
     }
     createTilemap(levelJson, tilesetJson) {
@@ -174,8 +253,9 @@ class LevelLoader {
             let posX = cellX * TILE_WIDTH;
             let posY = cellY * TILE_HEIGHT;
             let sprite = this.makeSprite(tileId, posX, posY, levelJson['tileset_name']);
+            let tileType = this.getTileType(tilesetJson, tileId);
             let hitbox = new Phaser.Geom.Rectangle(posX, posY, TILE_WIDTH, TILE_HEIGHT);
-            tiles.push(new Tile(sprite, TileType.Empty, cellX, cellY, posX, posY, hitbox));
+            tiles.push(new Tile(sprite, tileType, cellX, cellY, posX, posY, hitbox));
         }
         return new Tilemap(tiles, gridCellsX, gridCellsY, TILE_WIDTH, TILE_HEIGHT);
     }
@@ -192,6 +272,19 @@ class LevelLoader {
         let sprite = this.scene.add.sprite(posX + TILE_WIDTH / 2, posY + TILE_WIDTH / 2, tilesetName, tileId);
         sprite.setOrigin(0.5, 0.5);
         return sprite;
+    }
+    getTileType(tilesetJson, tileId) {
+        if (tileId < 0) {
+            return TileType.Empty;
+        }
+        let tiletypes = tilesetJson['tiletypes'];
+        if (tiletypes['solid'].indexOf(tileId) >= 0) {
+            return TileType.Solid;
+        }
+        if (tiletypes['semisolid'].indexOf(tileId) >= 0) {
+            return TileType.SemiSolid;
+        }
+        return TileType.Empty;
     }
 }
 var TileType;
@@ -275,6 +368,8 @@ class Player extends Actor {
         this.playerView = new PlayerView(scene, this);
     }
     update() {
+    }
+    lateUpdate() {
         this.playerView.updatePosition();
     }
 }
@@ -301,7 +396,6 @@ class PlayerView {
     }
     updatePosition() {
         this.sprite.setPosition(this.player.hitbox.centerX, this.player.hitbox.bottom);
-        console.log(this.player.hitbox.bottom);
     }
 }
 var GameTime;

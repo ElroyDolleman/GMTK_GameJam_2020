@@ -8,7 +8,7 @@ let config = {
     pixelArt: true,
     backgroundColor: '#5d5bff',
     title: "GMTK Game Jam 2020",
-    version: "0.2.1",
+    version: "0.0.0",
     disableContextMenu: true,
     scene: [ GameScene ],
     fps: {
