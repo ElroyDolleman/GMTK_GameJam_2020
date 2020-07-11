@@ -28,6 +28,5 @@
  <objectgroup id="2" name="Object Layer 1">
   <object id="2" name="player_spawn" x="40" y="240" width="16" height="32"/>
   <object id="3" name="goal" x="224" y="96" width="16" height="16"/>
-  <object id="4" name="goal" x="224" y="96" width="16" height="16"/>
  </objectgroup>
 </map>
