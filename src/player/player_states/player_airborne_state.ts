@@ -25,7 +25,7 @@ class PlayerAirborneState extends PlayerBaseState {
 
     }
 
-    public updateGravity(gravity:number = 16, maxFallSpeed:number = 240) {
+    public updateGravity(gravity:number = 16, maxFallSpeed:number = 220) {
         if (this.player.speed.y < maxFallSpeed) {
             this.player.speed.y = Math.min(this.player.speed.y + gravity, maxFallSpeed);
         }
