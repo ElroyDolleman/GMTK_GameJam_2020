@@ -1,12 +1,19 @@
+enum ExplosionTypes {
+    Small = 1,
+    Big = 2,
+}
+
 class Explosion extends Actor {
 
     public damageCircle:Phaser.Geom.Circle;
     public animation:Animator;
 
-    public get canDamage():boolean { return this.animation.sprite.anims.currentFrame.index > 3; };
+    public get canDamage():boolean { return this.animation.sprite.anims.currentFrame.index < 4; };
     public dead:boolean = false;
 
-    constructor(scene:Phaser.Scene, x:number, y:number, radius:number) {
+    private debug:Phaser.GameObjects.Graphics;
+
+    constructor(scene:Phaser.Scene, x:number, y:number, radius:number, explosionType:ExplosionTypes) {
         super(new Phaser.Geom.Rectangle(x, y, 0, 0));
 
         this.animation = new Animator(
@@ -14,27 +21,34 @@ class Explosion extends Actor {
             scene.add.sprite(x, y, 'effects_sheet', 'explosion_00.png'),
             this
         );
-        this.animation.createAnimation('boom', 'effects_sheet', 'explosion_', 6, 14, 0);
+        this.animation.createAnimation(this.getAnim(ExplosionTypes.Small), 'effects_sheet', 'explosion' + ExplosionTypes.Small + '_', 6, 14, 0);
+        this.animation.createAnimation(this.getAnim(ExplosionTypes.Big), 'effects_sheet', 'explosion' + ExplosionTypes.Big + '_', 6, 16, 0);
         this.animation.addOnCompleteCallback(this.animationDone, this);
+
         this.animation.sprite.setOrigin(0.5, 0.5);
 
-        this.replay(x, y, radius);
+        this.debug = elroy.add.graphics({ fillStyle: { color: 0xFF, alpha: 1 }});
+        this.replay(x, y, radius, explosionType);
     }
 
-    public replay(x:number, y:number, radius:number) {
-        this.damageCircle = new Phaser.Geom.Circle(this.hitbox.centerX, this.hitbox.centerY, radius);
+    public replay(x:number, y:number, radius:number, explosionType:ExplosionTypes) {
+        this.damageCircle = new Phaser.Geom.Circle(x, y, radius);
 
         this.animation.sprite.x = x;
         this.animation.sprite.y = y;
-        this.animation.changeAnimation('boom');
+        this.animation.changeAnimation(this.getAnim(explosionType));
         this.animation.sprite.setVisible(true);
 
-        this.dead = false;
+        this.dead = false;//this.debug.fillCircle(x, y, radius);
+    }
+
+    private getAnim(explosionType:ExplosionTypes):string {
+        return 'boom_' + explosionType;
     }
 
     private animationDone() {
         this.dead = true;
-        this.animation.sprite.setVisible(false);
+        this.animation.sprite.setVisible(false);this.debug.clear();
     }
 
     public overlaps(actor:Actor):boolean {

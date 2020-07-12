@@ -61,7 +61,7 @@ class Player extends Actor {
 
             let offsetX = 12 - Math.random() * 24;
             let offsetY = 12 - Math.random() * 24;
-            this.level.addExplosion(this.hitbox.centerX + offsetX, this.hitbox.centerY + offsetY);
+            this.level.addExplosion(this.hitbox.centerX + offsetX, this.hitbox.centerY + offsetY, 2, ExplosionTypes.Small);
         }
     }
 
@@ -115,7 +115,7 @@ class Player extends Actor {
         this.speed.x = 0;
         if (this.speed.y < 0) this.speed.y = 0;
 
-        this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY);
+        this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY, 3, ExplosionTypes.Small);
     }
 
     destroy() {

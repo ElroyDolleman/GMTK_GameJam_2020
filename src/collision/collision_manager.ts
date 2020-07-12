@@ -83,6 +83,18 @@ class CollisionManager {
         return tiles;
     }
 
+    public getOverlappingSolidTilesFromCircle(circle:Phaser.Geom.Circle) {
+        let tiles = this.currentLevel.map.getTilesFromCircle(circle, 2);
+
+        for (let i = 0; i < tiles.length; i++) {
+            if (tiles[i].tiletype == TileType.Empty || !Phaser.Geom.Intersects.CircleToRectangle(circle, tiles[i].hitbox)) {
+                tiles.splice(i, 1);
+                i--;
+            }
+        }
+        return tiles;
+    }
+
     private overlapsNonEmptyTile(tile:Tile, actor:Actor) {
         return tile.tiletype != TileType.Empty && Phaser.Geom.Rectangle.Overlaps(tile.hitbox, actor.hitbox);
     }

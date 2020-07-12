@@ -50,6 +50,12 @@ class Level
                 if (!this.player.dead && this.explosions[i].overlaps(this.player)) {
                     this.player.die();
                 }
+                let tiles = this.collisionManager.getOverlappingSolidTilesFromCircle(this.explosions[i].damageCircle);
+                tiles.forEach(tile => {
+                    if (tile.tiletype == TileType.Breakable) {
+                        tile.break();
+                    }
+                });
             }
         }
 
@@ -67,7 +73,7 @@ class Level
                     }
                 });
 
-                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY);
+                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 10, ExplosionTypes.Big);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;
@@ -75,14 +81,14 @@ class Level
         }
     }
 
-    public addExplosion(x:number, y:number) {
+    public addExplosion(x:number, y:number, radius:number, type:ExplosionTypes) {
         if (this.explosionsPool.length > 0) {
             let explosion = this.explosionsPool.pop();
-            explosion.replay(x, y, 6);
+            explosion.replay(x, y, radius, type);
             this.explosions.push(explosion);
         }
         else {
-            this.explosions.push(new Explosion(this.scene, x, y, 6));
+            this.explosions.push(new Explosion(this.scene, x, y, radius, type));
         }
     }
 

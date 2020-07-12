@@ -24,6 +24,12 @@ class Tilemap {
             this.toGridLocation(rect.right + margin, rect.bottom + margin)
         );
     }
+    public getTilesFromCircle(circle:Phaser.Geom.Circle, margin:number = 0) {
+        return this.getTilesFromTo(
+            this.toGridLocation(circle.left - margin, circle.top - margin), 
+            this.toGridLocation(circle.right + margin, circle.bottom + margin)
+        );
+    }
     public getTilesFromTo(from:Phaser.Geom.Point, to:Phaser.Geom.Point):Tile[] {
         let tiles = [];
         for (let x = from.x; x <= to.x; x++) {

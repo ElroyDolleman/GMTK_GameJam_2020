@@ -21,7 +21,15 @@ class LevelLoader {
         this.jsonData = this.scene.cache.json.get('levels');
     }
 
-    public create(name:string) {
+    public exists(name:string):boolean {
+        return this.jsonData[name] != undefined;
+    }
+    public getName(num:number):string {
+        let levelNumString = num < 10 ? '0' + num : num.toString();
+        return 'level' + levelNumString;
+    }
+
+    public create(name:string):Level {
         let levelJson = this.jsonData[name];
         let tilesetJson = this.jsonData['tilesets_data'][levelJson['tileset_name']];
 

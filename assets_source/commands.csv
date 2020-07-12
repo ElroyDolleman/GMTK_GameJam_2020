@@ -3,7 +3,7 @@ jump;1000
 jump;1000
 jump;1000
 levelname;level02
-jump;1800
+jump;1700
 jump;900
 jump;900
 jump;900
@@ -19,3 +19,8 @@ jump;400
 jump;400
 jump;400
 jump;400
+levelname;level04
+rocket;600
+jump;1500
+rocket;600
+jump;1500

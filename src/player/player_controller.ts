@@ -29,7 +29,7 @@ class PlayerController {
             ProjectileTypes.playerRocket, 
             xpos + (8 * dir),
             this.player.hitbox.centerY - 3,
-            140 * dir,
+            180 * dir,
             0
         );
     }

@@ -1,13 +1,13 @@
-//let elroy:Phaser.Scene;
+let elroy;
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 1;
+        this.levelNum = 4;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
         Inputs.initKeyInputs(this);
-        //elroy = this;
+        elroy = this;
     }
     preload() {
         this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
@@ -25,8 +25,7 @@ class GameScene extends Phaser.Scene {
         this.startLevel();
     }
     startLevel() {
-        let levelNumString = this.levelNum < 10 ? '0' + this.levelNum : this.levelNum.toString();
-        let levelName = 'level' + levelNumString;
+        let levelName = this.levelLoader.getName(this.levelNum);
         this.currentLevel = this.levelLoader.create(levelName);
         this.commandManager = new CommandManager(this, levelName);
         this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
@@ -66,6 +65,10 @@ class GameScene extends Phaser.Scene {
         this.currentLevel.destroy();
         this.screenTransition.onLevelEnter();
         this.levelNum++;
+        let levelName = this.levelLoader.getName(this.levelNum);
+        if (!this.levelLoader.exists(levelName)) {
+            this.levelNum = 1;
+        }
         this.startLevel();
     }
     restartLevel() {
@@ -161,6 +164,16 @@ class CollisionManager {
         let tiles = this.currentLevel.map.getTilesFromRect(actor.nextHitbox, 2);
         for (let i = 0; i < tiles.length; i++) {
             if (!this.overlapsNonEmptyTile(tiles[i], actor) || !tiles[i].isSolid) {
+                tiles.splice(i, 1);
+                i--;
+            }
+        }
+        return tiles;
+    }
+    getOverlappingSolidTilesFromCircle(circle) {
+        let tiles = this.currentLevel.map.getTilesFromCircle(circle, 2);
+        for (let i = 0; i < tiles.length; i++) {
+            if (tiles[i].tiletype == TileType.Empty || !Phaser.Geom.Intersects.CircleToRectangle(circle, tiles[i].hitbox)) {
                 tiles.splice(i, 1);
                 i--;
             }
@@ -379,29 +392,40 @@ class Animator {
         this.sprite.destroy();
     }
 }
+var ExplosionTypes;
+(function (ExplosionTypes) {
+    ExplosionTypes[ExplosionTypes["Small"] = 1] = "Small";
+    ExplosionTypes[ExplosionTypes["Big"] = 2] = "Big";
+})(ExplosionTypes || (ExplosionTypes = {}));
 class Explosion extends Actor {
-    constructor(scene, x, y, radius) {
+    constructor(scene, x, y, radius, explosionType) {
         super(new Phaser.Geom.Rectangle(x, y, 0, 0));
         this.dead = false;
         this.animation = new Animator(scene, scene.add.sprite(x, y, 'effects_sheet', 'explosion_00.png'), this);
-        this.animation.createAnimation('boom', 'effects_sheet', 'explosion_', 6, 14, 0);
+        this.animation.createAnimation(this.getAnim(ExplosionTypes.Small), 'effects_sheet', 'explosion' + ExplosionTypes.Small + '_', 6, 14, 0);
+        this.animation.createAnimation(this.getAnim(ExplosionTypes.Big), 'effects_sheet', 'explosion' + ExplosionTypes.Big + '_', 6, 16, 0);
         this.animation.addOnCompleteCallback(this.animationDone, this);
         this.animation.sprite.setOrigin(0.5, 0.5);
-        this.replay(x, y, radius);
+        this.debug = elroy.add.graphics({ fillStyle: { color: 0xFF, alpha: 1 } });
+        this.replay(x, y, radius, explosionType);
     }
-    get canDamage() { return this.animation.sprite.anims.currentFrame.index > 3; }
+    get canDamage() { return this.animation.sprite.anims.currentFrame.index < 4; }
     ;
-    replay(x, y, radius) {
-        this.damageCircle = new Phaser.Geom.Circle(this.hitbox.centerX, this.hitbox.centerY, radius);
+    replay(x, y, radius, explosionType) {
+        this.damageCircle = new Phaser.Geom.Circle(x, y, radius);
         this.animation.sprite.x = x;
         this.animation.sprite.y = y;
-        this.animation.changeAnimation('boom');
+        this.animation.changeAnimation(this.getAnim(explosionType));
         this.animation.sprite.setVisible(true);
-        this.dead = false;
+        this.dead = false; //this.debug.fillCircle(x, y, radius);
+    }
+    getAnim(explosionType) {
+        return 'boom_' + explosionType;
     }
     animationDone() {
         this.dead = true;
         this.animation.sprite.setVisible(false);
+        this.debug.clear();
     }
     overlaps(actor) {
         return Phaser.Geom.Intersects.CircleToRectangle(this.damageCircle, actor.hitbox);
@@ -469,6 +493,12 @@ class Level {
                 if (!this.player.dead && this.explosions[i].overlaps(this.player)) {
                     this.player.die();
                 }
+                let tiles = this.collisionManager.getOverlappingSolidTilesFromCircle(this.explosions[i].damageCircle);
+                tiles.forEach(tile => {
+                    if (tile.tiletype == TileType.Breakable) {
+                        tile.break();
+                    }
+                });
             }
         }
         // Projectiles
@@ -483,21 +513,21 @@ class Level {
                         tile.break();
                     }
                 });
-                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY);
+                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 10, ExplosionTypes.Big);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;
             }
         }
     }
-    addExplosion(x, y) {
+    addExplosion(x, y, radius, type) {
         if (this.explosionsPool.length > 0) {
             let explosion = this.explosionsPool.pop();
-            explosion.replay(x, y, 6);
+            explosion.replay(x, y, radius, type);
             this.explosions.push(explosion);
         }
         else {
-            this.explosions.push(new Explosion(this.scene, x, y, 6));
+            this.explosions.push(new Explosion(this.scene, x, y, radius, type));
         }
     }
     addProjectile(props, x, y, speedX, speedY) {
@@ -554,6 +584,13 @@ class LevelLoader {
     }
     init() {
         this.jsonData = this.scene.cache.json.get('levels');
+    }
+    exists(name) {
+        return this.jsonData[name] != undefined;
+    }
+    getName(num) {
+        let levelNumString = num < 10 ? '0' + num : num.toString();
+        return 'level' + levelNumString;
     }
     create(name) {
         let levelJson = this.jsonData[name];
@@ -727,6 +764,9 @@ class Tilemap {
     getTilesFromRect(rect, margin = 0) {
         return this.getTilesFromTo(this.toGridLocation(rect.x - margin, rect.y - margin), this.toGridLocation(rect.right + margin, rect.bottom + margin));
     }
+    getTilesFromCircle(circle, margin = 0) {
+        return this.getTilesFromTo(this.toGridLocation(circle.left - margin, circle.top - margin), this.toGridLocation(circle.right + margin, circle.bottom + margin));
+    }
     getTilesFromTo(from, to) {
         let tiles = [];
         for (let x = from.x; x <= to.x; x++) {
@@ -811,7 +851,7 @@ class Player extends Actor {
             this.deadTimer -= 250;
             let offsetX = 12 - Math.random() * 24;
             let offsetY = 12 - Math.random() * 24;
-            this.level.addExplosion(this.hitbox.centerX + offsetX, this.hitbox.centerY + offsetY);
+            this.level.addExplosion(this.hitbox.centerX + offsetX, this.hitbox.centerY + offsetY, 2, ExplosionTypes.Small);
         }
     }
     onCollisionSolved(result) {
@@ -859,7 +899,7 @@ class Player extends Actor {
         this.speed.x = 0;
         if (this.speed.y < 0)
             this.speed.y = 0;
-        this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY);
+        this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY, 3, ExplosionTypes.Small);
     }
     destroy() {
         this.view.destroy();
@@ -887,7 +927,7 @@ class PlayerController {
     shootRocketCommand() {
         let dir = this.player.view.animator.facingDirection;
         let xpos = this.player.hitbox.centerX - ProjectileTypes.playerRocket.width / 2;
-        this.player.level.addProjectile(ProjectileTypes.playerRocket, xpos + (8 * dir), this.player.hitbox.centerY - 3, 140 * dir, 0);
+        this.player.level.addProjectile(ProjectileTypes.playerRocket, xpos + (8 * dir), this.player.hitbox.centerY - 3, 180 * dir, 0);
     }
 }
 /// <reference path="../entities/animator.ts"/>
