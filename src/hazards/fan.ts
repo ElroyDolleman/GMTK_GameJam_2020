@@ -23,6 +23,7 @@ class Fan extends Actor {
         this.rotation = rotation;
 
         if (this.rotation == 90) this.x -= 16;
+        if (this.rotation == 270) this.y -= 16;
 
         this.animation = new Animator(
             scene,
@@ -53,5 +54,9 @@ class Fan extends Actor {
         });
         //this.emitter.start();
         this.emitter.setPosition(this.x, this.y)
+    }
+
+    public destroy() {
+        this.animation.destroy();
     }
 }

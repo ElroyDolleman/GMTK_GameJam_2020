@@ -127,6 +127,9 @@ class Level
         for (let i = 0; i < this.projectiles.length; i++) {
             this.projectiles[i].destroy();
         }
+        for (let i = 0; i < this.fans.length; i++) {
+            this.fans[i].destroy();
+        }
         this.map.destroy();
         this.goal.destroy();
         this.player.destroy();

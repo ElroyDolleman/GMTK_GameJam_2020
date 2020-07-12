@@ -36,6 +36,10 @@ rocket;300
 jump;1000
 rocket;300
 levelname;level07
+jump;1400
+jump;1400
+jump;1400
+levelname;level08
 jump;1500
-jump;1500
+jump;500
 jump;1500

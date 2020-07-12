@@ -22,7 +22,7 @@ class Player extends Actor {
     }
 
     constructor(scene:Phaser.Scene, level:Level, startX:number, startY:number) {
-        super(new Phaser.Geom.Rectangle(startX, startY - 26, 16, 26));
+        super(new Phaser.Geom.Rectangle(startX, startY - 24, 16, 24));
 
         this.level = level;
         this.view = new PlayerView(scene, this);

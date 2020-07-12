@@ -33,6 +33,17 @@ class Tile
         //     this.debug = elroy.add.graphics({ fillStyle: { color: 0xFF, alpha: 1 } });
         //     this.debug.fillRectShape(hitbox);
         // }
+
+        if (tiletype == TileType.Hazard) {
+            if (this.hitbox.width == 16) {
+                this.hitbox.width -= 4;
+                this.hitbox.x += 2;
+            }
+            if (this.hitbox.height == 16) {
+                this.hitbox.height -= 4;
+                this.hitbox.y += 2;
+            }
+        }
     }
 
     public break() {

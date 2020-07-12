@@ -2,7 +2,7 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 1;
+        this.levelNum = 7;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -538,6 +538,8 @@ class Fan extends Actor {
         this.rotation = rotation;
         if (this.rotation == 90)
             this.x -= 16;
+        if (this.rotation == 270)
+            this.y -= 16;
         this.animation = new Animator(scene, scene.add.sprite(x + 0, y + 0, 'levelobjects_sheet', 'fan_00.png'), this);
         this.animation.sprite.setOrigin(0, 0);
         this.animation.sprite.setRotation(Phaser.Math.DegToRad(rotation));
@@ -574,6 +576,9 @@ class Fan extends Actor {
         });
         //this.emitter.start();
         this.emitter.setPosition(this.x, this.y);
+    }
+    destroy() {
+        this.animation.destroy();
     }
 }
 class Projectile extends Actor {
@@ -701,6 +706,9 @@ class Level {
         }
         for (let i = 0; i < this.projectiles.length; i++) {
             this.projectiles[i].destroy();
+        }
+        for (let i = 0; i < this.fans.length; i++) {
+            this.fans[i].destroy();
         }
         this.map.destroy();
         this.goal.destroy();
@@ -896,6 +904,16 @@ class Tile {
         //     this.debug = elroy.add.graphics({ fillStyle: { color: 0xFF, alpha: 1 } });
         //     this.debug.fillRectShape(hitbox);
         // }
+        if (tiletype == TileType.Hazard) {
+            if (this.hitbox.width == 16) {
+                this.hitbox.width -= 4;
+                this.hitbox.x += 2;
+            }
+            if (this.hitbox.height == 16) {
+                this.hitbox.height -= 4;
+                this.hitbox.y += 2;
+            }
+        }
     }
     get isSolid() { return this.tiletype == TileType.Solid || this.tiletype == TileType.Breakable; }
     get canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid || this.tiletype == TileType.Breakable; }
@@ -972,7 +990,7 @@ class Tilemap {
 /// <reference path="../entities/actor.ts"/>
 class Player extends Actor {
     constructor(scene, level, startX, startY) {
-        super(new Phaser.Geom.Rectangle(startX, startY - 26, 16, 26));
+        super(new Phaser.Geom.Rectangle(startX, startY - 24, 16, 24));
         this.dead = false;
         this.deadTimer = 0;
         this.level = level;
@@ -1311,6 +1329,10 @@ class PlayerAirborneState extends PlayerBaseState {
     leave() {
     }
     updateGravity(gravity = 16, maxFallSpeed = 220) {
+        if (this.player.speed.x < -238 || this.player.speed.x > 238) {
+            if (this.player.speed.y >= 0)
+                gravity *= 0.12;
+        }
         if (this.player.speed.y < maxFallSpeed) {
             this.player.speed.y = Math.min(this.player.speed.y + gravity, maxFallSpeed);
         }
