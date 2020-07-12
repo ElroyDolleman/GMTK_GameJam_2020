@@ -11,8 +11,6 @@ class Explosion extends Actor {
     public get canDamage():boolean { return this.animation.sprite.anims.currentFrame.index < 4; };
     public dead:boolean = false;
 
-    private debug:Phaser.GameObjects.Graphics;
-
     constructor(scene:Phaser.Scene, x:number, y:number, radius:number, explosionType:ExplosionTypes) {
         super(new Phaser.Geom.Rectangle(x, y, 0, 0));
 
@@ -27,7 +25,6 @@ class Explosion extends Actor {
 
         this.animation.sprite.setOrigin(0.5, 0.5);
 
-        this.debug = elroy.add.graphics({ fillStyle: { color: 0xFF, alpha: 1 }});
         this.replay(x, y, radius, explosionType);
     }
 
@@ -39,7 +36,7 @@ class Explosion extends Actor {
         this.animation.changeAnimation(this.getAnim(explosionType));
         this.animation.sprite.setVisible(true);
 
-        this.dead = false;//this.debug.fillCircle(x, y, radius);
+        this.dead = false;
     }
 
     private getAnim(explosionType:ExplosionTypes):string {
@@ -48,7 +45,7 @@ class Explosion extends Actor {
 
     private animationDone() {
         this.dead = true;
-        this.animation.sprite.setVisible(false);this.debug.clear();
+        this.animation.sprite.setVisible(false);
     }
 
     public overlaps(actor:Actor):boolean {

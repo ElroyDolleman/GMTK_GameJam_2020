@@ -2,7 +2,7 @@ let elroy;
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 4;
+        this.levelNum = 4; //1;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -68,6 +68,7 @@ class GameScene extends Phaser.Scene {
         let levelName = this.levelLoader.getName(this.levelNum);
         if (!this.levelLoader.exists(levelName)) {
             this.levelNum = 1;
+            //TODO: Finish game
         }
         this.startLevel();
     }
@@ -406,7 +407,6 @@ class Explosion extends Actor {
         this.animation.createAnimation(this.getAnim(ExplosionTypes.Big), 'effects_sheet', 'explosion' + ExplosionTypes.Big + '_', 6, 16, 0);
         this.animation.addOnCompleteCallback(this.animationDone, this);
         this.animation.sprite.setOrigin(0.5, 0.5);
-        this.debug = elroy.add.graphics({ fillStyle: { color: 0xFF, alpha: 1 } });
         this.replay(x, y, radius, explosionType);
     }
     get canDamage() { return this.animation.sprite.anims.currentFrame.index < 4; }
@@ -417,7 +417,7 @@ class Explosion extends Actor {
         this.animation.sprite.y = y;
         this.animation.changeAnimation(this.getAnim(explosionType));
         this.animation.sprite.setVisible(true);
-        this.dead = false; //this.debug.fillCircle(x, y, radius);
+        this.dead = false;
     }
     getAnim(explosionType) {
         return 'boom_' + explosionType;
@@ -425,7 +425,6 @@ class Explosion extends Actor {
     animationDone() {
         this.dead = true;
         this.animation.sprite.setVisible(false);
-        this.debug.clear();
     }
     overlaps(actor) {
         return Phaser.Geom.Intersects.CircleToRectangle(this.damageCircle, actor.hitbox);
@@ -513,7 +512,7 @@ class Level {
                         tile.break();
                     }
                 });
-                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 10, ExplosionTypes.Big);
+                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 13, ExplosionTypes.Big);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;
@@ -563,7 +562,7 @@ class LevelGoal extends Actor {
     }
     overlaps(actor) {
         return Phaser.Math.Difference(this.hitbox.bottom, actor.hitbox.bottom) == 0 &&
-            Phaser.Geom.Rectangle.Overlaps(this.hitbox, actor.hitbox);
+            Phaser.Math.Difference(this.hitbox.centerX, actor.hitbox.centerX) < 8;
     }
     destroy() {
         this.goalAnimator.destroy();
@@ -927,7 +926,7 @@ class PlayerController {
     shootRocketCommand() {
         let dir = this.player.view.animator.facingDirection;
         let xpos = this.player.hitbox.centerX - ProjectileTypes.playerRocket.width / 2;
-        this.player.level.addProjectile(ProjectileTypes.playerRocket, xpos + (8 * dir), this.player.hitbox.centerY - 3, 180 * dir, 0);
+        this.player.level.addProjectile(ProjectileTypes.playerRocket, xpos + (8 * dir), this.player.hitbox.centerY - 3, 200 * dir, 0);
     }
 }
 /// <reference path="../entities/animator.ts"/>
@@ -1073,7 +1072,7 @@ class CommandView {
         }
     }
     convertTimeToXPos(time) {
-        return time / 8;
+        return time * 0.15;
     }
     destroy() {
         this.container.destroy();

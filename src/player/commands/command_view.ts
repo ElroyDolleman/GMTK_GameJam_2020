@@ -52,7 +52,7 @@ class CommandView {
     }
 
     public convertTimeToXPos(time:number) {
-        return time / 8;
+        return time * 0.15;
     }
 
     public destroy() {

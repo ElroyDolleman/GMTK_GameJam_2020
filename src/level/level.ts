@@ -73,7 +73,7 @@ class Level
                     }
                 });
 
-                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 10, ExplosionTypes.Big);
+                this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 13, ExplosionTypes.Big);
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;

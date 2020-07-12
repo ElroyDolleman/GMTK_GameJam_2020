@@ -18,7 +18,7 @@
  </tile>
  <tile id="3">
   <properties>
-   <property name="TileType" value="solid"/>
+   <property name="TileType" value=""/>
   </properties>
  </tile>
  <tile id="4">
@@ -168,7 +168,7 @@
  </tile>
  <tile id="33">
   <properties>
-   <property name="TileType" value="solid"/>
+   <property name="TileType" value=""/>
   </properties>
  </tile>
  <tile id="34">
@@ -320,7 +320,7 @@
  </tile>
  <tile id="63">
   <properties>
-   <property name="TileType" value="solid"/>
+   <property name="TileType" value=""/>
   </properties>
  </tile>
  <tile id="64">
@@ -480,17 +480,17 @@
  </tile>
  <tile id="95">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="96">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="97">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="98">
@@ -630,17 +630,17 @@
  </tile>
  <tile id="125">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="126">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="127">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="128">
@@ -770,17 +770,17 @@
  </tile>
  <tile id="153">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="154">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="155">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="156">
