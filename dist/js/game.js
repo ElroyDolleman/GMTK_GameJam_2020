@@ -2,7 +2,7 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 10;
+        this.levelNum = 1;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -118,7 +118,7 @@ let config = {
     pixelArt: true,
     backgroundColor: '#000000',
     title: "GMTK Game Jam 2020",
-    version: "1.0.1",
+    version: "1.1.0",
     disableContextMenu: true,
     scene: [GameScene],
     fps: {
@@ -940,12 +940,12 @@ class Tile {
         // }
         if (tiletype == TileType.Hazard) {
             if (this.hitbox.width == 16) {
-                this.hitbox.width -= 4;
-                this.hitbox.x += 2;
+                this.hitbox.width -= 8;
+                this.hitbox.x += 4;
             }
             if (this.hitbox.height == 16) {
-                this.hitbox.height -= 4;
-                this.hitbox.y += 2;
+                this.hitbox.height -= 8;
+                this.hitbox.y += 4;
             }
         }
     }

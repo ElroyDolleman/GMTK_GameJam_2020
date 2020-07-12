@@ -36,12 +36,12 @@ class Tile
 
         if (tiletype == TileType.Hazard) {
             if (this.hitbox.width == 16) {
-                this.hitbox.width -= 4;
-                this.hitbox.x += 2;
+                this.hitbox.width -= 8;
+                this.hitbox.x += 4;
             }
             if (this.hitbox.height == 16) {
-                this.hitbox.height -= 4;
-                this.hitbox.y += 2;
+                this.hitbox.height -= 8;
+                this.hitbox.y += 4;
             }
         }
     }

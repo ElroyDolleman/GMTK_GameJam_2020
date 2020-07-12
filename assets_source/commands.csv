@@ -41,6 +41,7 @@ jump;700
 jump;700
 jump;1550
 die;500
+jump;3500
 levelname;level08
 jump;1400
 jump;1400
@@ -52,6 +53,7 @@ rocket;1400
 jump;500
 jump;1000
 die;1000
+jump;3500
 levelname;level10
 jump;1500
 jump;500
@@ -59,3 +61,16 @@ jump;1500
 jump;1200
 jump;500
 die;800
+jump;3500
+levelname;level11
+jump;666
+jump;500
+rocket;378
+jump;1300
+jump;390
+jump;390
+rocket;790
+jump;500
+jump;1469
+die;666
+jump;3500

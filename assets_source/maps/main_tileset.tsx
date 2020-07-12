@@ -1225,7 +1225,7 @@
  </tile>
  <tile id="244">
   <properties>
-   <property name="TileType" value=""/>
+   <property name="TileType" value="solid"/>
   </properties>
  </tile>
  <tile id="245">
