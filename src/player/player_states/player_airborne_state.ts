@@ -43,10 +43,11 @@ class PlayerAirborneState extends PlayerBaseState {
     }
 
     private updateAnim() {
-        if (this.player.speed.y < 0) {
-            this.player.view.changeAnimation(PlayerAnimations.Jump);
-        }
-        else if (this.player.speed.y >= 0) {
+        // if (this.player.speed.y < 0) {
+        //     this.player.view.changeAnimation(PlayerAnimations.Jump);
+        // }
+        //else 
+        if (this.player.view.animator.currentAnimKey != 'jump' || this.player.speed.y >= 0) {
             this.player.view.changeAnimation(PlayerAnimations.Fall);
         }
     }

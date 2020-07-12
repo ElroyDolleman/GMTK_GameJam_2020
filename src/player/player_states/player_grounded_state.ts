@@ -8,6 +8,7 @@ class PlayerGroundedState extends PlayerBaseState {
 
     public enter() {
         this.updateAnim();
+        this.player.view.playLandParticles();
     }
 
     public update() {
@@ -21,7 +22,9 @@ class PlayerGroundedState extends PlayerBaseState {
     }
 
     public leave() {
-        
+        if (this.player.speed.y < 0) {
+            this.player.view.playJumpParticles();
+        }
     }
 
     public onCollisionSolved(result:CollisionResult) {

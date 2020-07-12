@@ -20,6 +20,7 @@ class PlayerController {
     public jumpCommand() {
         audioManager.sounds.blast.play();
 
+        this.player.view.changeAnimation(PlayerAnimations.Jump);
         this.player.speed.y = -320;
         this.player.changeState(this.player.airborneState);
     }

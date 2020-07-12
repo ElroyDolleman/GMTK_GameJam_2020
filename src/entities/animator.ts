@@ -10,6 +10,8 @@ class Animator {
     private currentSquish: { timer:number, startTime:number, reverseTime:number, scaleX:number, scaleY:number } = { timer: 0, startTime: 0, reverseTime: 0, scaleX: 1, scaleY: 1 };
     public get isSquishing():boolean { return this.currentSquish.timer > 0; }
 
+    public currentAnimKey:string = '';
+
     constructor(scene:Phaser.Scene, sprite:Phaser.GameObjects.Sprite, actor:Actor) {
         this.scene = scene;
         this.sprite = sprite;
@@ -26,6 +28,7 @@ class Animator {
     }
 
     public changeAnimation(key:string, isSingleFrame:boolean = false) {
+        this.currentAnimKey = key;
         if (isSingleFrame) {
             this.sprite.anims.stop();
             this.sprite.setFrame(key);

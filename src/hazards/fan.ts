@@ -4,6 +4,7 @@ class Fan extends Actor {
     public rotation:number;
 
     //private debug:Phaser.GameObjects.Graphics;
+    public emitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
     private defaultBlowPower:number = 400;
     public get blowSpeedX():number {
@@ -35,5 +36,22 @@ class Fan extends Actor {
 
         // this.debug = scene.add.graphics({ fillStyle: { color: 0xFF, alpha: 0.3 } });
         // this.debug.fillRectShape(this.hitbox);
+
+        this.createParticles(scene);
+    }
+
+    private createParticles(scene:Phaser.Scene) {
+        this.emitter = particleManager.createEmitter({
+            x: 0,
+            y: 0,
+            lifespan: { min: 350, max: 400 },
+            speed: { min: 15, max: 20 },
+            angle: this.rotation - 90,
+            frequency: 32,
+            emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 16, 16) },
+            frame: dustFrames
+        });
+        //this.emitter.start();
+        this.emitter.setPosition(this.x, this.y)
     }
 }

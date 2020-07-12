@@ -7,7 +7,7 @@ class GameScene extends Phaser.Scene {
     private currentLevel:Level;
     private screenTransition:ScreenTransition;
 
-    private levelNum:number = 7;
+    private levelNum:number = 1;
 
     private startView:StartView;
 
@@ -31,6 +31,14 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        let frameNames = this.anims.generateFrameNames('effects_sheet', { 
+            prefix: 'dust_',
+            suffix: '.png',
+            end: 5,
+            zeroPad: 2
+        });
+        frameNames.forEach((e) => { dustFrames.push(e.frame.toString()); });
+
         new InputManager(this);
         inputManager.firstInputCallback = this.startGame.bind(this);
 
@@ -56,6 +64,10 @@ class GameScene extends Phaser.Scene {
     }
 
     startLevel() {
+        if (particleManager) particleManager.destroy();
+        particleManager = this.add.particles('effects_sheet');
+        particleManager.setDepth(1);
+
         let levelName = this.levelLoader.getName(this.levelNum);
 
         this.currentLevel = this.levelLoader.create(levelName);

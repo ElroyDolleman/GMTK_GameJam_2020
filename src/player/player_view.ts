@@ -20,6 +20,9 @@ class PlayerView {
 
     private textureKey:string = 'player_sheet';
 
+    public landDustEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    public jumpDustEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+
     constructor(scene:Phaser.Scene, player:Player) {
         this.player = player;
 
@@ -44,11 +47,49 @@ class PlayerView {
         this.jetFireAnimation.changeAnimation('burn');
 
         this.changeAnimation(PlayerAnimations.Idle);
+        this.createParticles(scene);
         this.updateVisuals();
+    }
+
+    private createParticles(scene:Phaser.Scene) {
+        this.landDustEmitter = particleManager.createEmitter({
+            x: 0,
+            y: 0,
+            lifespan: { min: 300, max: 400 },
+            speed: { min: 4, max: 6 },
+            angle: 270,
+            frequency: -1,
+            emitZone: { source: new Phaser.Geom.Rectangle(-6, -3, 12, 1) },
+            frame: dustFrames
+        });
+        this.jumpDustEmitter = particleManager.createEmitter({
+            x: 0,
+            y: 0,
+            lifespan: { min: 200, max: 350 },
+            speed: { min: 10, max: 15 },
+            angle: 270,
+            frequency: -1,
+            emitZone: { source: new Phaser.Geom.Rectangle(-4, -3, 8, 1) },
+            frame: dustFrames
+        });
+    }
+
+    public playLandParticles() {
+        this.landDustEmitter.explode(14, this.player.hitbox.centerX, this.player.hitbox.bottom);
+    }
+    public playJumpParticles() {
+        this.jumpDustEmitter.explode(8, this.player.hitbox.centerX, this.player.hitbox.bottom);
     }
 
     public changeAnimation(animation:any) {
         this.animator.changeAnimation(animation.key, animation.isSingleFrame);
+
+        if (animation.key == 'jump') {
+            this.jetFireAnimation.sprite.setVisible(true);
+        }
+        else {
+            this.jetFireAnimation.sprite.setVisible(false);
+        }
     }
 
     public updateVisuals() {
@@ -61,20 +102,19 @@ class PlayerView {
             this.sprite.flipX = true;
         }
 
-        if (this.player.isJumping) {
+        // if (this.player.isJumping) {
+        //     this.updateJetVisuals();
+        // }
+        // else
+         if (this.jetFireAnimation.sprite.visible) {
+            //this.jetFireAnimation.sprite.setVisible(false);
             this.updateJetVisuals();
-        }
-        else if (this.jetFireAnimation.sprite.visible) {
-            this.jetFireAnimation.sprite.setVisible(false);
         }
 
         this.animator.update();
     }
 
     private updateJetVisuals() {
-        if (!this.jetFireAnimation.sprite.visible) {
-            this.jetFireAnimation.sprite.setVisible(true);
-        }
         if (!this.sprite.flipX) {
             this.jetFireAnimation.sprite.setPosition(this.player.hitbox.centerX - 9, this.player.hitbox.bottom - 5);
         }

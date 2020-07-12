@@ -2,7 +2,7 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 7;
+        this.levelNum = 1;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -19,6 +19,13 @@ class GameScene extends Phaser.Scene {
         new AudioManager(this);
     }
     create() {
+        let frameNames = this.anims.generateFrameNames('effects_sheet', {
+            prefix: 'dust_',
+            suffix: '.png',
+            end: 5,
+            zeroPad: 2
+        });
+        frameNames.forEach((e) => { dustFrames.push(e.frame.toString()); });
         new InputManager(this);
         inputManager.firstInputCallback = this.startGame.bind(this);
         audioManager.addSoundsToGame(this);
@@ -36,6 +43,10 @@ class GameScene extends Phaser.Scene {
         audioManager.playMusic(this);
     }
     startLevel() {
+        if (particleManager)
+            particleManager.destroy();
+        particleManager = this.add.particles('effects_sheet');
+        particleManager.setDepth(1);
         let levelName = this.levelLoader.getName(this.levelNum);
         this.currentLevel = this.levelLoader.create(levelName);
         this.commandManager = new CommandManager(this, levelName);
@@ -106,7 +117,7 @@ let config = {
     pixelArt: true,
     backgroundColor: '#000000',
     title: "GMTK Game Jam 2020",
-    version: "0.0.2",
+    version: "0.0.3",
     disableContextMenu: true,
     scene: [GameScene],
     fps: {
@@ -400,6 +411,7 @@ class Actor {
 class Animator {
     constructor(scene, sprite, actor) {
         this.currentSquish = { timer: 0, startTime: 0, reverseTime: 0, scaleX: 1, scaleY: 1 };
+        this.currentAnimKey = '';
         this.scene = scene;
         this.sprite = sprite;
         this.actor = actor;
@@ -416,6 +428,7 @@ class Animator {
         this.sprite.setPosition(this.actor.x, this.actor.y);
     }
     changeAnimation(key, isSingleFrame = false) {
+        this.currentAnimKey = key;
         if (isSingleFrame) {
             this.sprite.anims.stop();
             this.sprite.setFrame(key);
@@ -521,7 +534,6 @@ class Explosion extends Actor {
 class Fan extends Actor {
     constructor(scene, x, y, rotation) {
         super(new Phaser.Geom.Rectangle(x, y, 16, 16));
-        //private debug:Phaser.GameObjects.Graphics;
         this.defaultBlowPower = 400;
         this.rotation = rotation;
         if (this.rotation == 90)
@@ -533,6 +545,7 @@ class Fan extends Actor {
         this.animation.changeAnimation('rotate');
         // this.debug = scene.add.graphics({ fillStyle: { color: 0xFF, alpha: 0.3 } });
         // this.debug.fillRectShape(this.hitbox);
+        this.createParticles(scene);
     }
     get blowSpeedX() {
         if (this.rotation == 90)
@@ -547,6 +560,20 @@ class Fan extends Actor {
         if (this.rotation == 180)
             return this.defaultBlowPower;
         return 0;
+    }
+    createParticles(scene) {
+        this.emitter = particleManager.createEmitter({
+            x: 0,
+            y: 0,
+            lifespan: { min: 350, max: 400 },
+            speed: { min: 15, max: 20 },
+            angle: this.rotation - 90,
+            frequency: 32,
+            emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 16, 16) },
+            frame: dustFrames
+        });
+        //this.emitter.start();
+        this.emitter.setPosition(this.x, this.y);
     }
 }
 class Projectile extends Actor {
@@ -1058,6 +1085,7 @@ class PlayerController {
     }
     jumpCommand() {
         audioManager.sounds.blast.play();
+        this.player.view.changeAnimation(PlayerAnimations.Jump);
         this.player.speed.y = -320;
         this.player.changeState(this.player.airborneState);
     }
@@ -1099,10 +1127,45 @@ class PlayerView {
         this.jetFireAnimation.createAnimation('burn', this.textureKey, 'jet_fire_', 4);
         this.jetFireAnimation.changeAnimation('burn');
         this.changeAnimation(PlayerAnimations.Idle);
+        this.createParticles(scene);
         this.updateVisuals();
+    }
+    createParticles(scene) {
+        this.landDustEmitter = particleManager.createEmitter({
+            x: 0,
+            y: 0,
+            lifespan: { min: 300, max: 400 },
+            speed: { min: 4, max: 6 },
+            angle: 270,
+            frequency: -1,
+            emitZone: { source: new Phaser.Geom.Rectangle(-6, -3, 12, 1) },
+            frame: dustFrames
+        });
+        this.jumpDustEmitter = particleManager.createEmitter({
+            x: 0,
+            y: 0,
+            lifespan: { min: 200, max: 350 },
+            speed: { min: 10, max: 15 },
+            angle: 270,
+            frequency: -1,
+            emitZone: { source: new Phaser.Geom.Rectangle(-4, -3, 8, 1) },
+            frame: dustFrames
+        });
+    }
+    playLandParticles() {
+        this.landDustEmitter.explode(14, this.player.hitbox.centerX, this.player.hitbox.bottom);
+    }
+    playJumpParticles() {
+        this.jumpDustEmitter.explode(8, this.player.hitbox.centerX, this.player.hitbox.bottom);
     }
     changeAnimation(animation) {
         this.animator.changeAnimation(animation.key, animation.isSingleFrame);
+        if (animation.key == 'jump') {
+            this.jetFireAnimation.sprite.setVisible(true);
+        }
+        else {
+            this.jetFireAnimation.sprite.setVisible(false);
+        }
     }
     updateVisuals() {
         this.sprite.setPosition(this.player.hitbox.centerX, this.player.hitbox.bottom);
@@ -1112,18 +1175,17 @@ class PlayerView {
         else if (this.player.speedDirectionX == -1) {
             this.sprite.flipX = true;
         }
-        if (this.player.isJumping) {
+        // if (this.player.isJumping) {
+        //     this.updateJetVisuals();
+        // }
+        // else
+        if (this.jetFireAnimation.sprite.visible) {
+            //this.jetFireAnimation.sprite.setVisible(false);
             this.updateJetVisuals();
-        }
-        else if (this.jetFireAnimation.sprite.visible) {
-            this.jetFireAnimation.sprite.setVisible(false);
         }
         this.animator.update();
     }
     updateJetVisuals() {
-        if (!this.jetFireAnimation.sprite.visible) {
-            this.jetFireAnimation.sprite.setVisible(true);
-        }
         if (!this.sprite.flipX) {
             this.jetFireAnimation.sprite.setPosition(this.player.hitbox.centerX - 9, this.player.hitbox.bottom - 5);
         }
@@ -1264,10 +1326,11 @@ class PlayerAirborneState extends PlayerBaseState {
         }
     }
     updateAnim() {
-        if (this.player.speed.y < 0) {
-            this.player.view.changeAnimation(PlayerAnimations.Jump);
-        }
-        else if (this.player.speed.y >= 0) {
+        // if (this.player.speed.y < 0) {
+        //     this.player.view.changeAnimation(PlayerAnimations.Jump);
+        // }
+        //else 
+        if (this.player.view.animator.currentAnimKey != 'jump' || this.player.speed.y >= 0) {
             this.player.view.changeAnimation(PlayerAnimations.Fall);
         }
     }
@@ -1279,6 +1342,7 @@ class PlayerGroundedState extends PlayerBaseState {
     }
     enter() {
         this.updateAnim();
+        this.player.view.playLandParticles();
     }
     update() {
         let prevSpeedX = this.player.speed.x;
@@ -1288,6 +1352,9 @@ class PlayerGroundedState extends PlayerBaseState {
         }
     }
     leave() {
+        if (this.player.speed.y < 0) {
+            this.player.view.playJumpParticles();
+        }
     }
     onCollisionSolved(result) {
         if (!this.player.hasGroundUnderneath(result.tiles)) {
@@ -1395,6 +1462,8 @@ var GameTime;
 let TILE_WIDTH = 16;
 let TILE_HEIGHT = 16;
 let gameStarted = false;
+let particleManager;
+let dustFrames = [];
 let inputManager;
 class InputManager {
     constructor(scene) {
