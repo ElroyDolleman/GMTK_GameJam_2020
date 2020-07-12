@@ -7,7 +7,7 @@ class GameScene extends Phaser.Scene {
     private currentLevel:Level;
     private screenTransition:ScreenTransition;
 
-    private levelNum:number = 9;
+    private levelNum:number = 10;
 
     private startView:StartView;
 
@@ -75,6 +75,7 @@ class GameScene extends Phaser.Scene {
         this.commandManager = new CommandManager(this, levelName);
         this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
         this.commandManager.listenToCommand(commandEvents.rocket, this.currentLevel.player.controller.shootRocketCommand, this.currentLevel.player.controller);
+        this.commandManager.listenToCommand(commandEvents.die, this.currentLevel.player.die, this.currentLevel.player);
     }
 
     update(time:number, delta:number) {
@@ -89,11 +90,10 @@ class GameScene extends Phaser.Scene {
             return;
         }
 
+        let wasDead = this.currentLevel.player.dead;
         if (!this.currentLevel.player.dead) {
             this.commandManager.update();
         }
-
-        let wasDead = this.currentLevel.player.dead;
         this.currentLevel.update();
 
         if (!wasDead && this.currentLevel.player.dead) {

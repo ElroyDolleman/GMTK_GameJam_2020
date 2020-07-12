@@ -10,7 +10,7 @@
 			"scale": 1,
 			"frames": [
 				{
-					"filename": "command_jump.png",
+					"filename": "command_die.png",
 					"rotated": false,
 					"trimmed": false,
 					"sourceSize": {
@@ -31,7 +31,7 @@
 					}
 				},
 				{
-					"filename": "command_rocket.png",
+					"filename": "command_jump.png",
 					"rotated": false,
 					"trimmed": false,
 					"sourceSize": {
@@ -52,7 +52,7 @@
 					}
 				},
 				{
-					"filename": "indicator.png",
+					"filename": "command_rocket.png",
 					"rotated": false,
 					"trimmed": false,
 					"sourceSize": {
@@ -71,6 +71,27 @@
 						"w": 21,
 						"h": 22
 					}
+				},
+				{
+					"filename": "indicator.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 21,
+						"h": 22
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 21,
+						"h": 22
+					},
+					"frame": {
+						"x": 21,
+						"y": 22,
+						"w": 21,
+						"h": 22
+					}
 				}
 			]
 		}
@@ -78,6 +99,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:29690e4d9699ebe9d0aa6fec91915101:2fe3ffb02755bc30e8e97be2558c7721:8f9d5a2b9d4cf40be3362164167b3ac0$"
+		"smartupdate": "$TexturePacker:SmartUpdate:3f43fd3897fd76596bbe8ae3494a9333:2ab068e207d8fb5235fc70fb3a677b40:8f9d5a2b9d4cf40be3362164167b3ac0$"
 	}
 }

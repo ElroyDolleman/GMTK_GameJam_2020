@@ -1,6 +1,7 @@
 let commandEvents = {
     jump: 'jump',
     rocket: 'rocket',
+    die: 'die',
 }
 
 class CommandManager {

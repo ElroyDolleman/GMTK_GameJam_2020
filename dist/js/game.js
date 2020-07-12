@@ -2,7 +2,7 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 9;
+        this.levelNum = 10;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -52,6 +52,7 @@ class GameScene extends Phaser.Scene {
         this.commandManager = new CommandManager(this, levelName);
         this.commandManager.listenToCommand(commandEvents.jump, this.currentLevel.player.controller.jumpCommand, this.currentLevel.player.controller);
         this.commandManager.listenToCommand(commandEvents.rocket, this.currentLevel.player.controller.shootRocketCommand, this.currentLevel.player.controller);
+        this.commandManager.listenToCommand(commandEvents.die, this.currentLevel.player.die, this.currentLevel.player);
     }
     update(time, delta) {
         inputManager.update(this);
@@ -64,10 +65,10 @@ class GameScene extends Phaser.Scene {
         else if (this.screenTransition.active) {
             return;
         }
+        let wasDead = this.currentLevel.player.dead;
         if (!this.currentLevel.player.dead) {
             this.commandManager.update();
         }
-        let wasDead = this.currentLevel.player.dead;
         this.currentLevel.update();
         if (!wasDead && this.currentLevel.player.dead) {
             setTimeout(this.onDead.bind(this), 800);
@@ -117,7 +118,7 @@ let config = {
     pixelArt: true,
     backgroundColor: '#000000',
     title: "GMTK Game Jam 2020",
-    version: "0.0.3",
+    version: "1.0.1",
     disableContextMenu: true,
     scene: [GameScene],
     fps: {
@@ -1249,6 +1250,7 @@ class PlayerView {
 let commandEvents = {
     jump: 'jump',
     rocket: 'rocket',
+    die: 'die',
 };
 class CommandManager {
     constructor(scene, levelName) {
