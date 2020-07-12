@@ -7,7 +7,7 @@ class GameScene extends Phaser.Scene {
     private currentLevel:Level;
     private screenTransition:ScreenTransition;
 
-    private levelNum:number = 5;
+    private levelNum:number = 1;
 
     init() {
         this.levelLoader = new LevelLoader(this);
