@@ -4,8 +4,8 @@
 			"image": "levelobjects_sheet.png",
 			"format": "RGBA8888",
 			"size": {
-				"w": 31,
-				"h": 31
+				"w": 32,
+				"h": 32
 			},
 			"scale": 1,
 			"frames": [
@@ -45,10 +45,52 @@
 						"h": 15
 					},
 					"frame": {
-						"x": 0,
-						"y": 16,
+						"x": 16,
+						"y": 0,
 						"w": 16,
 						"h": 15
+					}
+				},
+				{
+					"filename": "fan_00.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 7,
+						"w": 16,
+						"h": 9
+					},
+					"frame": {
+						"x": 16,
+						"y": 15,
+						"w": 16,
+						"h": 9
+					}
+				},
+				{
+					"filename": "fan_01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 16,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 7,
+						"w": 10,
+						"h": 9
+					},
+					"frame": {
+						"x": 0,
+						"y": 16,
+						"w": 10,
+						"h": 9
 					}
 				}
 			]
@@ -57,6 +99,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:955be3edf6758e25cbe5bdc82fe9d0ba:170498f9aa36322decea3102828cb592:66946939b7e2651e8c9318c0cb91340a$"
+		"smartupdate": "$TexturePacker:SmartUpdate:e185aa360f2d26fc71cae269e9e8e258:2a80d57247066b6b18302f118adacda5:66946939b7e2651e8c9318c0cb91340a$"
 	}
 }

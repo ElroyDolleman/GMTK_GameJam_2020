@@ -6,7 +6,7 @@ let config = {
     height: 320,
     scaleMode: 3,
     pixelArt: true,
-    backgroundColor: '#5d5bff',
+    backgroundColor: '#000000',
     title: "GMTK Game Jam 2020",
     version: "0.0.2",
     disableContextMenu: true,

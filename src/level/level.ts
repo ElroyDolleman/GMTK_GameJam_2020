@@ -4,6 +4,7 @@ class Level
     public map:Tilemap;
     public scene:Phaser.Scene;
 
+    public fans:Fan[];
     public player:Player;
     public goal:LevelGoal;
     public won:boolean;
@@ -25,6 +26,13 @@ class Level
         this.projectiles = [];
 
         this.won = false;
+    }
+
+    public createFans(fansData:any) {
+        this.fans = [];
+        for (let i = 0; i < fansData.length; i++) {
+            this.fans.push(new Fan(this.scene, fansData[i].x, fansData[i].y, fansData[i].rotation));
+        }
     }
 
     public update() {
@@ -78,6 +86,15 @@ class Level
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;
+            }
+        }
+
+        // Fans
+        for (let i = 0; i < this.fans.length; i++) {
+            let fan = this.fans[i];
+            if (Phaser.Geom.Rectangle.Overlaps(fan.hitbox, this.player.hitbox)) {
+                this.player.speed.x = fan.blowSpeedX;
+                this.player.speed.y = fan.blowSpeedY;
             }
         }
     }

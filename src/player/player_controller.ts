@@ -5,7 +5,7 @@ class PlayerController {
         this.player = player;
     }
 
-    public updateMovementControls(maxRunSpeed:number = 110, runAcceleration:number = 24) {
+    public updateMovementControls(maxRunSpeed:number = 110, runAcceleration:number = 20) {
         if (inputManager.leftDown) {
             this.player.moveLeft(maxRunSpeed, runAcceleration);
         }

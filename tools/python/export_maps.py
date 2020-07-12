@@ -81,12 +81,15 @@ for filename in os.listdir(directory):
         tiles.append(cell - 1)
 
     # Objects
+    json_level['fans'] = []
     objects = json_content['layers'][1]['objects']
     for obj in objects:
         if obj['name'] == 'player_spawn':
             json_level['player_spawn'] = { 'x':obj['x'], 'y':obj['y'] }
         if obj['name'] == 'goal':
             json_level['goal'] = { 'x':obj['x'], 'y':obj['y'] }
+        if obj['name'] == 'fan':
+            json_level['fans'].append({ 'x':obj['x'], 'y':obj['y'], 'rotation':obj['rotation'] })
     
     # Create the levels json
     json_level['gridCellsX'] = json_content['width']

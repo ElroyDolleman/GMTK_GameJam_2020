@@ -73,6 +73,9 @@ class Player extends Actor {
         }
         else {
             this.currentState.onCollisionSolved(result);
+            // if (result.touchedSpring && this.speed.y >= 0) {
+            //     this.speed.y = -320;
+            // }
         }
     }
 
@@ -87,7 +90,7 @@ class Player extends Actor {
             this.speed.x = Math.max(this.speed.x - runAcceleration, -maxRunSpeed);
         }
         else if (this.speed.x < -maxRunSpeed) {
-            this.speed.x = Math.min(this.speed.x + runAcceleration, -maxRunSpeed);
+            this.speed.x = Math.min(this.speed.x + runAcceleration * 0.323, -maxRunSpeed);
         }
     }
 
@@ -96,7 +99,7 @@ class Player extends Actor {
             this.speed.x = Math.min(this.speed.x + runAcceleration, maxRunSpeed);
         }
         else if (this.speed.x > maxRunSpeed) {
-            this.speed.x = Math.max(this.speed.x - runAcceleration, maxRunSpeed);
+            this.speed.x = Math.max(this.speed.x - runAcceleration * 0.323, maxRunSpeed);
         }
     }
 

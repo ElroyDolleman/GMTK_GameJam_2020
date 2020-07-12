@@ -2,7 +2,7 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 1;
+        this.levelNum = 7;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -27,6 +27,7 @@ class GameScene extends Phaser.Scene {
         this.startView = new StartView(this);
     }
     startGame() {
+        this.cameras.main.setBackgroundColor('#5d5bff');
         this.startView.destroy();
         gameStarted = true;
         this.screenTransition.onLevelEnter();
@@ -103,7 +104,7 @@ let config = {
     height: 320,
     scaleMode: 3,
     pixelArt: true,
-    backgroundColor: '#5d5bff',
+    backgroundColor: '#000000',
     title: "GMTK Game Jam 2020",
     version: "0.0.2",
     disableContextMenu: true,
@@ -517,6 +518,37 @@ class Explosion extends Actor {
         this.animation.destroy();
     }
 }
+class Fan extends Actor {
+    constructor(scene, x, y, rotation) {
+        super(new Phaser.Geom.Rectangle(x, y, 16, 16));
+        //private debug:Phaser.GameObjects.Graphics;
+        this.defaultBlowPower = 400;
+        this.rotation = rotation;
+        if (this.rotation == 90)
+            this.x -= 16;
+        this.animation = new Animator(scene, scene.add.sprite(x + 0, y + 0, 'levelobjects_sheet', 'fan_00.png'), this);
+        this.animation.sprite.setOrigin(0, 0);
+        this.animation.sprite.setRotation(Phaser.Math.DegToRad(rotation));
+        this.animation.createAnimation('rotate', 'levelobjects_sheet', 'fan_', 2, 8);
+        this.animation.changeAnimation('rotate');
+        // this.debug = scene.add.graphics({ fillStyle: { color: 0xFF, alpha: 0.3 } });
+        // this.debug.fillRectShape(this.hitbox);
+    }
+    get blowSpeedX() {
+        if (this.rotation == 90)
+            return this.defaultBlowPower;
+        if (this.rotation == 270)
+            return -this.defaultBlowPower;
+        return 0;
+    }
+    get blowSpeedY() {
+        if (this.rotation == 0)
+            return -this.defaultBlowPower;
+        if (this.rotation == 180)
+            return this.defaultBlowPower;
+        return 0;
+    }
+}
 class Projectile extends Actor {
     constructor(sprite, x, y, width, height, speedX, speedY) {
         super(new Phaser.Geom.Rectangle(x, y, width, height));
@@ -556,6 +588,12 @@ class Level {
         this.explosionsPool = [];
         this.projectiles = [];
         this.won = false;
+    }
+    createFans(fansData) {
+        this.fans = [];
+        for (let i = 0; i < fansData.length; i++) {
+            this.fans.push(new Fan(this.scene, fansData[i].x, fansData[i].y, fansData[i].rotation));
+        }
     }
     update() {
         this.player.update();
@@ -601,6 +639,14 @@ class Level {
                 projectile.destroy();
                 this.projectiles.splice(i, 1);
                 i--;
+            }
+        }
+        // Fans
+        for (let i = 0; i < this.fans.length; i++) {
+            let fan = this.fans[i];
+            if (Phaser.Geom.Rectangle.Overlaps(fan.hitbox, this.player.hitbox)) {
+                this.player.speed.x = fan.blowSpeedX;
+                this.player.speed.y = fan.blowSpeedY;
             }
         }
     }
@@ -679,7 +725,9 @@ class LevelLoader {
     create(name) {
         let levelJson = this.jsonData[name];
         let tilesetJson = this.jsonData['tilesets_data'][levelJson['tileset_name']];
-        return new Level(this.scene, this.createTilemap(levelJson, tilesetJson), levelJson['player_spawn'], levelJson['goal']);
+        let level = new Level(this.scene, this.createTilemap(levelJson, tilesetJson), levelJson['player_spawn'], levelJson['goal']);
+        level.createFans(levelJson['fans']);
+        return level;
     }
     createTilemap(levelJson, tilesetJson) {
         let gridCellsX = levelJson['gridCellsX'];
@@ -946,6 +994,9 @@ class Player extends Actor {
         }
         else {
             this.currentState.onCollisionSolved(result);
+            // if (result.touchedSpring && this.speed.y >= 0) {
+            //     this.speed.y = -320;
+            // }
         }
     }
     changeState(newState) {
@@ -958,7 +1009,7 @@ class Player extends Actor {
             this.speed.x = Math.max(this.speed.x - runAcceleration, -maxRunSpeed);
         }
         else if (this.speed.x < -maxRunSpeed) {
-            this.speed.x = Math.min(this.speed.x + runAcceleration, -maxRunSpeed);
+            this.speed.x = Math.min(this.speed.x + runAcceleration * 0.323, -maxRunSpeed);
         }
     }
     moveRight(maxRunSpeed, runAcceleration) {
@@ -966,7 +1017,7 @@ class Player extends Actor {
             this.speed.x = Math.min(this.speed.x + runAcceleration, maxRunSpeed);
         }
         else if (this.speed.x > maxRunSpeed) {
-            this.speed.x = Math.max(this.speed.x - runAcceleration, maxRunSpeed);
+            this.speed.x = Math.max(this.speed.x - runAcceleration * 0.323, maxRunSpeed);
         }
     }
     decelerate(deceleration) {
@@ -994,7 +1045,7 @@ class PlayerController {
     constructor(player) {
         this.player = player;
     }
-    updateMovementControls(maxRunSpeed = 110, runAcceleration = 24) {
+    updateMovementControls(maxRunSpeed = 110, runAcceleration = 20) {
         if (inputManager.leftDown) {
             this.player.moveLeft(maxRunSpeed, runAcceleration);
         }
