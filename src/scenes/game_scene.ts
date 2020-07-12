@@ -25,9 +25,12 @@ class GameScene extends Phaser.Scene {
         this.load.json('commands', 'assets/commands.json');
         this.levelLoader.preloadLevelJson();
         this.levelLoader.preloadSpritesheets();
+
+        new AudioManager(this);
     }
 
     create() {
+        audioManager.addSoundsToGame(this);
         this.levelLoader.init();
 
         this.screenTransition = new ScreenTransition(this);
@@ -35,6 +38,8 @@ class GameScene extends Phaser.Scene {
 
         this.startLevel();
         GameTime.startTime = new Date();
+
+        audioManager.playMusic(this);
     }
 
     startLevel() {

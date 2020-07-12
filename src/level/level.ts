@@ -34,6 +34,7 @@ class Level
 
         if (this.player.currentState == this.player.groundedState && this.goal.overlaps(this.player)) {
             this.won = true;
+            audioManager.sounds.win.play();
         }
 
         this.goal.update();

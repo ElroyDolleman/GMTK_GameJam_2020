@@ -18,11 +18,15 @@ class PlayerController {
     }
 
     public jumpCommand() {
+        audioManager.sounds.blast.play();
+
         this.player.speed.y = -320;
         this.player.changeState(this.player.airborneState);
     }
 
     public shootRocketCommand() {
+        audioManager.sounds.shoot.play();
+
         let dir = this.player.view.animator.facingDirection;
         let xpos = this.player.hitbox.centerX - ProjectileTypes.playerRocket.width / 2;
         this.player.level.addProjectile(

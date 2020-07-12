@@ -39,7 +39,7 @@ class ScreenTransition {
         this.scene.tweens.add({
             targets: this.graphics,
             props: { 
-                x: { value: -560, duration: 1000, ease: 'Linear' },
+                x: { value: -560, duration: 900, ease: 'Linear' },
             },
             onComplete: this.onEnterComplete.bind(this)
         });
@@ -54,7 +54,7 @@ class ScreenTransition {
         this.scene.tweens.add({
             targets: this.graphics,
             props: { 
-                x: { value: 0, duration: 1000, ease: 'Linear' },
+                x: { value: 0, duration: 900, ease: 'Linear' },
             },
             onComplete: onDone.bind(context)
         });

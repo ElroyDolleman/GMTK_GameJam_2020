@@ -36,6 +36,13 @@ class Explosion extends Actor {
         this.animation.changeAnimation(this.getAnim(explosionType));
         this.animation.sprite.setVisible(true);
 
+        if (explosionType == ExplosionTypes.Small) {
+            audioManager.sounds.explodeSmall.play();
+        }
+        else if (explosionType == ExplosionTypes.Big) {
+            audioManager.sounds.explode.play();
+        }
+
         this.dead = false;
     }
 

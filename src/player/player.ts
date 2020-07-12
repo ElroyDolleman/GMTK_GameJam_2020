@@ -116,6 +116,8 @@ class Player extends Actor {
         if (this.speed.y < 0) this.speed.y = 0;
 
         this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY, 3, ExplosionTypes.Small);
+
+        audioManager.sounds.lose.play();
     }
 
     destroy() {

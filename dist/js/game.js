@@ -17,13 +17,16 @@ class GameScene extends Phaser.Scene {
         this.load.json('commands', 'assets/commands.json');
         this.levelLoader.preloadLevelJson();
         this.levelLoader.preloadSpritesheets();
+        new AudioManager(this);
     }
     create() {
+        audioManager.addSoundsToGame(this);
         this.levelLoader.init();
         this.screenTransition = new ScreenTransition(this);
         this.screenTransition.onLevelEnter();
         this.startLevel();
         GameTime.startTime = new Date();
+        audioManager.playMusic(this);
     }
     startLevel() {
         let levelName = this.levelLoader.getName(this.levelNum);
@@ -286,7 +289,7 @@ class ScreenTransition {
         this.scene.tweens.add({
             targets: this.graphics,
             props: {
-                x: { value: -560, duration: 1000, ease: 'Linear' },
+                x: { value: -560, duration: 900, ease: 'Linear' },
             },
             onComplete: this.onEnterComplete.bind(this)
         });
@@ -300,7 +303,7 @@ class ScreenTransition {
         this.scene.tweens.add({
             targets: this.graphics,
             props: {
-                x: { value: 0, duration: 1000, ease: 'Linear' },
+                x: { value: 0, duration: 900, ease: 'Linear' },
             },
             onComplete: onDone.bind(context)
         });
@@ -455,6 +458,12 @@ class Explosion extends Actor {
         this.animation.sprite.y = y;
         this.animation.changeAnimation(this.getAnim(explosionType));
         this.animation.sprite.setVisible(true);
+        if (explosionType == ExplosionTypes.Small) {
+            audioManager.sounds.explodeSmall.play();
+        }
+        else if (explosionType == ExplosionTypes.Big) {
+            audioManager.sounds.explode.play();
+        }
         this.dead = false;
     }
     getAnim(explosionType) {
@@ -516,6 +525,7 @@ class Level {
         this.collisionManager.moveActor(this.player);
         if (this.player.currentState == this.player.groundedState && this.goal.overlaps(this.player)) {
             this.won = true;
+            audioManager.sounds.win.play();
         }
         this.goal.update();
         this.player.lateUpdate();
@@ -937,6 +947,7 @@ class Player extends Actor {
         if (this.speed.y < 0)
             this.speed.y = 0;
         this.level.addExplosion(this.hitbox.centerX, this.hitbox.centerY, 3, ExplosionTypes.Small);
+        audioManager.sounds.lose.play();
     }
     destroy() {
         this.view.destroy();
@@ -958,10 +969,12 @@ class PlayerController {
         }
     }
     jumpCommand() {
+        audioManager.sounds.blast.play();
         this.player.speed.y = -320;
         this.player.changeState(this.player.airborneState);
     }
     shootRocketCommand() {
+        audioManager.sounds.shoot.play();
         let dir = this.player.view.animator.facingDirection;
         let xpos = this.player.hitbox.centerX - ProjectileTypes.playerRocket.width / 2;
         this.player.level.addProjectile(ProjectileTypes.playerRocket, xpos + (8 * dir), this.player.hitbox.centerY - 3, 200 * dir, 0);
@@ -1171,18 +1184,6 @@ class PlayerAirborneState extends PlayerBaseState {
         }
     }
 }
-/// <reference path="./player_airborne_state.ts"/>
-class PlayerFallState extends PlayerAirborneState {
-    constructor(player) {
-        super(player);
-    }
-    enter() {
-    }
-    update() {
-    }
-    leave() {
-    }
-}
 /// <reference path="./player_base_state.ts"/>
 class PlayerGroundedState extends PlayerBaseState {
     constructor(player) {
@@ -1214,17 +1215,57 @@ class PlayerGroundedState extends PlayerBaseState {
         }
     }
 }
-/// <reference path="./player_airborne_state.ts"/>
-class PlayerJumpState extends PlayerAirborneState {
-    constructor(player) {
-        super(player);
+let audioManager;
+class AudioManager {
+    constructor(scene) {
+        this.defaultConfig = {
+            mute: false,
+            volume: 1,
+            rate: 1,
+            detune: 0,
+            seek: 0,
+            loop: false,
+            delay: 0
+        };
+        audioManager = this;
+        scene.load.audio('explode_small', 'assets/audio/explode_small.wav');
+        scene.load.audio('headbonk', 'assets/audio/headbonk.wav');
+        scene.load.audio('teleport', 'assets/audio/teleport.wav');
+        scene.load.audio('explode', 'assets/audio/explode.wav');
+        scene.load.audio('landing', 'assets/audio/landing.wav');
+        scene.load.audio('shoot', 'assets/audio/shoot.wav');
+        scene.load.audio('blast', 'assets/audio/blast.wav');
+        scene.load.audio('lose', 'assets/audio/lose.wav');
+        scene.load.audio('hit', 'assets/audio/hit.wav');
+        scene.load.audio('win', 'assets/audio/win.wav');
+        scene.load.audio('background_music', 'assets/audio/background_music.wav');
     }
-    enter() {
-        this.player.speed.y = -24;
+    addSoundsToGame(scene) {
+        this.sounds = {
+            explodeSmall: scene.sound.add('explode_small', this.defaultConfig),
+            headbonk: scene.sound.add('headbonk', this.defaultConfig),
+            teleport: scene.sound.add('teleport', this.defaultConfig),
+            explode: scene.sound.add('explode', this.defaultConfig),
+            landing: scene.sound.add('landing', this.defaultConfig),
+            shoot: scene.sound.add('shoot', this.defaultConfig),
+            blast: scene.sound.add('blast', this.defaultConfig),
+            lose: scene.sound.add('lose', this.defaultConfig),
+            hit: scene.sound.add('hit', this.defaultConfig),
+            win: scene.sound.add('win', this.defaultConfig),
+        };
     }
-    update() {
-    }
-    leave() {
+    playMusic(scene) {
+        let music = scene.sound.add('background_music', {
+            mute: false,
+            volume: 0.12,
+            rate: 1,
+            detune: 0,
+            seek: 0,
+            loop: true,
+            delay: 0
+        });
+        music.play();
+        console.log(music);
     }
 }
 var GameTime;
