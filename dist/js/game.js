@@ -6,7 +6,6 @@ class GameScene extends Phaser.Scene {
     }
     init() {
         this.levelLoader = new LevelLoader(this);
-        Inputs.initKeyInputs(this);
         //elroy = this;
     }
     preload() {
@@ -20,9 +19,16 @@ class GameScene extends Phaser.Scene {
         new AudioManager(this);
     }
     create() {
+        new InputManager(this);
+        inputManager.firstInputCallback = this.startGame.bind(this);
         audioManager.addSoundsToGame(this);
         this.levelLoader.init();
         this.screenTransition = new ScreenTransition(this);
+        this.startView = new StartView(this);
+    }
+    startGame() {
+        this.startView.destroy();
+        gameStarted = true;
         this.screenTransition.onLevelEnter();
         this.startLevel();
         GameTime.startTime = new Date();
@@ -36,6 +42,9 @@ class GameScene extends Phaser.Scene {
         this.commandManager.listenToCommand(commandEvents.rocket, this.currentLevel.player.controller.shootRocketCommand, this.currentLevel.player.controller);
     }
     update(time, delta) {
+        inputManager.update(this);
+        if (!gameStarted)
+            return;
         if (this.currentLevel.won) {
             this.winUpdate();
             return;
@@ -96,7 +105,7 @@ let config = {
     pixelArt: true,
     backgroundColor: '#5d5bff',
     title: "GMTK Game Jam 2020",
-    version: "0.0.0",
+    version: "0.0.2",
     disableContextMenu: true,
     scene: [GameScene],
     fps: {
@@ -309,6 +318,34 @@ class ScreenTransition {
         });
     }
     update() {
+    }
+}
+class StartView {
+    constructor(scene) {
+        this.scene = scene;
+        this.topText = scene.add.text(320 / 2, 100, 'text', {
+            fontFamily: 'Arial',
+            align: 'center',
+            fontSize: '14px',
+        });
+        this.topText.text = "Press any key to start";
+        this.topText.depth = 69 + 1;
+        this.topText.setOrigin(0.5, 0.5);
+        if (scene.game.device.input.touch) {
+            this.bottomText = scene.add.text(320 / 2, 160, 'text', {
+                fontFamily: 'Arial',
+                align: 'center',
+                fontSize: '12px',
+            });
+            this.bottomText.text = "Or tap the screen";
+            this.bottomText.depth = 69 + 1;
+            this.bottomText.setOrigin(0.5, 0.5);
+        }
+    }
+    destroy() {
+        this.topText.destroy();
+        if (this.bottomText)
+            this.bottomText.destroy();
     }
 }
 class Actor {
@@ -958,10 +995,10 @@ class PlayerController {
         this.player = player;
     }
     updateMovementControls(maxRunSpeed = 110, runAcceleration = 24) {
-        if (Inputs.Left.isDown) {
+        if (inputManager.leftDown) {
             this.player.moveLeft(maxRunSpeed, runAcceleration);
         }
-        else if (Inputs.Right.isDown) {
+        else if (inputManager.rightDown) {
             this.player.moveRight(maxRunSpeed, runAcceleration);
         }
         else {
@@ -1265,7 +1302,6 @@ class AudioManager {
             delay: 0
         });
         music.play();
-        console.log(music);
     }
 }
 var GameTime;
@@ -1307,16 +1343,37 @@ var GameTime;
 })(GameTime || (GameTime = {}));
 let TILE_WIDTH = 16;
 let TILE_HEIGHT = 16;
-var Inputs;
-(function (Inputs) {
-    function initKeyInputs(scene) {
-        //Inputs.Up = scene.input.keyboard.addKey('up');
-        Inputs.Left = scene.input.keyboard.addKey('left');
-        //Inputs.Down = scene.input.keyboard.addKey('down');
-        Inputs.Right = scene.input.keyboard.addKey('right');
+let gameStarted = false;
+let inputManager;
+class InputManager {
+    constructor(scene) {
+        this.leftDown = false;
+        this.rightDown = false;
+        inputManager = this;
+        this.scene = scene;
+        this.leftKey = scene.input.keyboard.addKey('left');
+        this.rightKey = scene.input.keyboard.addKey('right');
+        scene.input.keyboard.on('keydown', this.firstInput, this);
     }
-    Inputs.initKeyInputs = initKeyInputs;
-})(Inputs || (Inputs = {}));
+    firstInput() {
+        this.scene.input.keyboard.removeListener('keydown');
+        this.firstInputCallback();
+    }
+    update(scene) {
+        let pointer = scene.input.activePointer;
+        let touchX = pointer.x;
+        let pointerIsDown = pointer.isDown && scene.game.device.input.touch;
+        let pointerLeftTouch = pointerIsDown && touchX < 320 / 2;
+        let pointerRightTouch = pointerIsDown && touchX > 320 / 2;
+        this.leftDown = (this.leftKey.isDown || pointerLeftTouch);
+        this.rightDown = (this.rightKey.isDown || pointerRightTouch);
+        if (!gameStarted) {
+            if (pointerIsDown) {
+                this.firstInput();
+            }
+        }
+    }
+}
 var MathHelper;
 (function (MathHelper) {
     /**

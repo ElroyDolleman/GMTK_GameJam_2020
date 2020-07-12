@@ -9,9 +9,10 @@ class GameScene extends Phaser.Scene {
 
     private levelNum:number = 1;
 
+    private startView:StartView;
+
     init() {
         this.levelLoader = new LevelLoader(this);
-        Inputs.initKeyInputs(this);
 
         //elroy = this;
     }
@@ -30,15 +31,25 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        new InputManager(this);
+        inputManager.firstInputCallback = this.startGame.bind(this);
+
         audioManager.addSoundsToGame(this);
         this.levelLoader.init();
 
         this.screenTransition = new ScreenTransition(this);
+
+        this.startView = new StartView(this);
+    }
+
+    startGame() {
+        this.startView.destroy();
+        gameStarted = true;
+
         this.screenTransition.onLevelEnter();
-
         this.startLevel();
+        
         GameTime.startTime = new Date();
-
         audioManager.playMusic(this);
     }
 
@@ -53,6 +64,9 @@ class GameScene extends Phaser.Scene {
     }
 
     update(time:number, delta:number) {
+        inputManager.update(this);
+        if (!gameStarted) return;
+
         if (this.currentLevel.won) {
             this.winUpdate();
             return;

@@ -55,6 +55,5 @@ class AudioManager {
             delay: 0
         });
         music.play();
-        console.log(music);
     }
 }

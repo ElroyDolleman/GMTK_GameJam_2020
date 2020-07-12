@@ -6,10 +6,10 @@ class PlayerController {
     }
 
     public updateMovementControls(maxRunSpeed:number = 110, runAcceleration:number = 24) {
-        if (Inputs.Left.isDown) {
+        if (inputManager.leftDown) {
             this.player.moveLeft(maxRunSpeed, runAcceleration);
         }
-        else if (Inputs.Right.isDown) {
+        else if (inputManager.rightDown) {
             this.player.moveRight(maxRunSpeed, runAcceleration);
         }
         else {
