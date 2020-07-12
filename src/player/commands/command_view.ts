@@ -58,4 +58,9 @@ class CommandView {
     public destroy() {
         this.container.destroy();
     }
+
+    public destroySingle(index:number) {
+        this.sprites[index].destroy();
+        this.sprites.splice(index, 1);
+    }
 }

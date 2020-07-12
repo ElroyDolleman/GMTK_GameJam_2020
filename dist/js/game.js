@@ -2,7 +2,7 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 7;
+        this.levelNum = 9;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
@@ -584,6 +584,8 @@ class Fan extends Actor {
 class Projectile extends Actor {
     constructor(sprite, x, y, width, height, speedX, speedY) {
         super(new Phaser.Geom.Rectangle(x, y, width, height));
+        this.reflectTurning = 1;
+        this.hasReflected = false;
         this.sprite = sprite;
         this.sprite.setOrigin(0.5, 0.5);
         this.sprite.x = this.hitbox.centerX;
@@ -598,12 +600,27 @@ class Projectile extends Actor {
         }
     }
     moveX() {
+        if (this.reflectTurning < 1) {
+            this.reflectTurning = Math.min(this.reflectTurning + GameTime.getElapsed() * 5, 1);
+            this.speed.x = Phaser.Math.Linear(this.normalSpeed, this.backSpeed, this.reflectTurning);
+            this.sprite.rotation = Phaser.Math.Linear(this.startRot, this.endRot, this.reflectTurning);
+        }
         super.moveX();
         this.sprite.x = this.hitbox.centerX;
     }
     moveY() {
         super.moveY();
         this.sprite.y = this.hitbox.centerY;
+    }
+    reflectBack() {
+        if (this.reflectTurning < 1)
+            return;
+        this.hasReflected = true;
+        this.normalSpeed = this.speed.x;
+        this.backSpeed = this.speed.x * -1;
+        this.startRot = this.sprite.rotation;
+        this.endRot = this.sprite.rotation + Math.PI;
+        this.reflectTurning = 0;
     }
     destroy() {
         this.sprite.destroy();
@@ -672,6 +689,14 @@ class Level {
                 this.projectiles.splice(i, 1);
                 i--;
             }
+            else if (projectile.hasReflected) {
+                if (Phaser.Geom.Rectangle.Overlaps(this.player.hitbox, projectile.hitbox)) {
+                    this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 13, ExplosionTypes.Big);
+                    projectile.destroy();
+                    this.projectiles.splice(i, 1);
+                    i--;
+                }
+            }
         }
         // Fans
         for (let i = 0; i < this.fans.length; i++) {
@@ -679,6 +704,14 @@ class Level {
             if (Phaser.Geom.Rectangle.Overlaps(fan.hitbox, this.player.hitbox)) {
                 this.player.speed.x = fan.blowSpeedX;
                 this.player.speed.y = fan.blowSpeedY;
+            }
+            for (let i = 0; i < this.projectiles.length; i++) {
+                let projectile = this.projectiles[i];
+                if (Phaser.Geom.Rectangle.Overlaps(fan.hitbox, projectile.hitbox)) {
+                    if (projectile.speedDirectionX != MathHelper.sign(fan.blowSpeedX)) {
+                        projectile.reflectBack();
+                    }
+                }
             }
         }
     }
@@ -1039,9 +1072,6 @@ class Player extends Actor {
         }
         else {
             this.currentState.onCollisionSolved(result);
-            // if (result.touchedSpring && this.speed.y >= 0) {
-            //     this.speed.y = -320;
-            // }
         }
     }
     changeState(newState) {
@@ -1225,7 +1255,10 @@ class CommandManager {
         this.commandIndex = 0;
         this.timer = 0;
         this.commandEventEmitter = new Phaser.Events.EventEmitter();
-        this.levelCommands = scene.cache.json.get('commands')[levelName];
+        this.levelCommands = [];
+        scene.cache.json.get('commands')[levelName].forEach((command) => {
+            this.levelCommands.push(command);
+        });
         this.view = new CommandView(this, scene);
     }
     get currentCommand() { return this.levelCommands[this.commandIndex]; }
@@ -1237,7 +1270,14 @@ class CommandManager {
         if (this.timer >= this.currentCommand.time) {
             this.timer -= this.currentCommand.time;
             this.commandEventEmitter.emit(this.currentCommand.name);
-            this.commandIndex = this.getNextCommandIndex();
+            if (this.currentCommand.time == 0) {
+                this.levelCommands.splice(this.commandIndex, 1);
+                this.view.destroySingle(this.commandIndex);
+            }
+            else {
+                //next
+                this.commandIndex = this.getNextCommandIndex();
+            }
         }
         this.view.update(this.timer);
     }
@@ -1295,6 +1335,10 @@ class CommandView {
     }
     destroy() {
         this.container.destroy();
+    }
+    destroySingle(index) {
+        this.sprites[index].destroy();
+        this.sprites.splice(index, 1);
     }
 }
 class PlayerBaseState {

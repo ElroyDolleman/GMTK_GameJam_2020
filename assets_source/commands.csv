@@ -43,3 +43,10 @@ levelname;level08
 jump;1500
 jump;500
 jump;1500
+levelname;level09
+rocket;0
+jump;1500
+rocket;1400
+jump;500
+jump;1000
+rocket;1500

@@ -87,6 +87,14 @@ class Level
                 this.projectiles.splice(i, 1);
                 i--;
             }
+            else if (projectile.hasReflected) {
+                if (Phaser.Geom.Rectangle.Overlaps(this.player.hitbox, projectile.hitbox)) {
+                    this.addExplosion(projectile.hitbox.centerX, projectile.hitbox.centerY, 13, ExplosionTypes.Big);
+                    projectile.destroy();
+                    this.projectiles.splice(i, 1);
+                    i--;
+                }
+            }
         }
 
         // Fans
@@ -95,6 +103,14 @@ class Level
             if (Phaser.Geom.Rectangle.Overlaps(fan.hitbox, this.player.hitbox)) {
                 this.player.speed.x = fan.blowSpeedX;
                 this.player.speed.y = fan.blowSpeedY;
+            }
+            for (let i = 0; i < this.projectiles.length; i++) {
+                let projectile = this.projectiles[i];
+                if (Phaser.Geom.Rectangle.Overlaps(fan.hitbox, projectile.hitbox)) {
+                    if (projectile.speedDirectionX != MathHelper.sign(fan.blowSpeedX)) {
+                        projectile.reflectBack();
+                    }
+                }
             }
         }
     }

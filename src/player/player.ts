@@ -73,9 +73,6 @@ class Player extends Actor {
         }
         else {
             this.currentState.onCollisionSolved(result);
-            // if (result.touchedSpring && this.speed.y >= 0) {
-            //     this.speed.y = -320;
-            // }
         }
     }
 

@@ -7,7 +7,7 @@ class GameScene extends Phaser.Scene {
     private currentLevel:Level;
     private screenTransition:ScreenTransition;
 
-    private levelNum:number = 7;
+    private levelNum:number = 9;
 
     private startView:StartView;
 

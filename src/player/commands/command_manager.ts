@@ -16,7 +16,10 @@ class CommandManager {
 
     constructor(scene:Phaser.Scene, levelName:string) {
         this.commandEventEmitter = new Phaser.Events.EventEmitter();
-        this.levelCommands = scene.cache.json.get('commands')[levelName];
+        this.levelCommands = [];
+        scene.cache.json.get('commands')[levelName].forEach((command:any) => {
+            this.levelCommands.push(command);
+        });
 
         this.view = new CommandView(this, scene);
     }
@@ -31,7 +34,15 @@ class CommandManager {
             this.timer -= this.currentCommand.time;
 
             this.commandEventEmitter.emit(this.currentCommand.name);
-            this.commandIndex = this.getNextCommandIndex();
+
+            if (this.currentCommand.time == 0) {
+                this.levelCommands.splice(this.commandIndex, 1);
+                this.view.destroySingle(this.commandIndex);
+            }
+            else {
+                //next
+                this.commandIndex = this.getNextCommandIndex();
+            }
         }
 
         this.view.update(this.timer);
