@@ -1,13 +1,13 @@
-let elroy;
+//let elroy:Phaser.Scene;
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 4; //1;
+        this.levelNum = 1;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
         Inputs.initKeyInputs(this);
-        elroy = this;
+        //elroy = this;
     }
     preload() {
         this.load.atlas('player_sheet', 'assets/player_sheet.png', 'assets/player_sheet.json');
@@ -23,6 +23,7 @@ class GameScene extends Phaser.Scene {
         this.screenTransition = new ScreenTransition(this);
         this.screenTransition.onLevelEnter();
         this.startLevel();
+        GameTime.startTime = new Date();
     }
     startLevel() {
         let levelName = this.levelLoader.getName(this.levelNum);
@@ -63,13 +64,14 @@ class GameScene extends Phaser.Scene {
     endLevel() {
         this.commandManager.destroy();
         this.currentLevel.destroy();
-        this.screenTransition.onLevelEnter();
         this.levelNum++;
         let levelName = this.levelLoader.getName(this.levelNum);
         if (!this.levelLoader.exists(levelName)) {
-            this.levelNum = 1;
-            //TODO: Finish game
+            GameTime.endTime = new Date();
+            new EndView(this);
+            return;
         }
+        this.screenTransition.onLevelEnter();
         this.startLevel();
     }
     restartLevel() {
@@ -217,6 +219,42 @@ var ProjectileTypes;
         height: 5,
     };
 })(ProjectileTypes || (ProjectileTypes = {}));
+class EndView {
+    constructor(scene) {
+        this.scene = scene;
+        let time = GameTime.getTimeDifferenceMSMM(GameTime.startTime, GameTime.endTime);
+        let timeString = '';
+        if (time.minutes > 0) {
+            timeString += time.minutes.toString() + 'm ';
+        }
+        timeString += time.seconds.toString() + 's ';
+        timeString += time.milliseconds.toString() + 'ms';
+        this.topText = scene.add.text(320 / 2, 100, 'text', {
+            fontFamily: 'Arial',
+            align: 'center',
+            fontSize: '32px',
+        });
+        this.bottomText = scene.add.text(320 / 2, 160, 'text', {
+            fontFamily: 'Arial',
+            align: 'center',
+            fontSize: '16px',
+        });
+        this.timeText = scene.add.text(320 / 2, 300, 'text', {
+            fontFamily: 'Arial',
+            align: 'center',
+            fontSize: '10px',
+        });
+        this.timeText.text = timeString;
+        this.topText.text = "The End!";
+        this.bottomText.text = "Thanks for playing :)";
+        this.timeText.depth = 69 + 1;
+        this.topText.depth = 69 + 1;
+        this.bottomText.depth = 69 + 1;
+        this.timeText.setOrigin(0.5, 0.5);
+        this.topText.setOrigin(0.5, 0.5);
+        this.bottomText.setOrigin(0.5, 0.5);
+    }
+}
 class ScreenTransition {
     constructor(scene) {
         this.scene = scene;
@@ -562,7 +600,7 @@ class LevelGoal extends Actor {
     }
     overlaps(actor) {
         return Phaser.Math.Difference(this.hitbox.bottom, actor.hitbox.bottom) == 0 &&
-            Phaser.Math.Difference(this.hitbox.centerX, actor.hitbox.centerX) < 8;
+            Phaser.Math.Difference(this.hitbox.centerX, actor.hitbox.centerX) < 12;
     }
     destroy() {
         this.goalAnimator.destroy();
@@ -1200,6 +1238,31 @@ var GameTime;
         return this.currentElapsedMS;
     }
     GameTime.getElapsedMS = getElapsedMS;
+    function getTimeDifferenceMSMM(firstDate, secondDate) {
+        var millisecondsDifference = Math.floor(this.getMillisecondsDifference(firstDate, secondDate));
+        var secondsDifference = Math.floor(this.getSecondsDifference(firstDate, secondDate));
+        var minutesDifference = Math.floor(this.getMinutesDifference(firstDate, secondDate));
+        millisecondsDifference -= secondsDifference * 1000;
+        secondsDifference -= minutesDifference * 60;
+        return {
+            minutes: minutesDifference,
+            seconds: secondsDifference,
+            milliseconds: millisecondsDifference
+        };
+    }
+    GameTime.getTimeDifferenceMSMM = getTimeDifferenceMSMM;
+    function getSecondsDifference(firstDate, secondDate) {
+        return (secondDate.getTime() / 1000) - (firstDate.getTime() / 1000);
+    }
+    GameTime.getSecondsDifference = getSecondsDifference;
+    function getMillisecondsDifference(firstDate, secondDate) {
+        return secondDate.getTime() - firstDate.getTime();
+    }
+    GameTime.getMillisecondsDifference = getMillisecondsDifference;
+    function getMinutesDifference(firstDate, secondDate) {
+        return this.getSecondsDifference(firstDate, secondDate) / 60;
+    }
+    GameTime.getMinutesDifference = getMinutesDifference;
 })(GameTime || (GameTime = {}));
 let TILE_WIDTH = 16;
 let TILE_HEIGHT = 16;

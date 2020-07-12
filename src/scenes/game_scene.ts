@@ -1,4 +1,4 @@
-let elroy:Phaser.Scene;
+//let elroy:Phaser.Scene;
 
 class GameScene extends Phaser.Scene {
 
@@ -13,7 +13,7 @@ class GameScene extends Phaser.Scene {
         this.levelLoader = new LevelLoader(this);
         Inputs.initKeyInputs(this);
 
-        elroy = this;
+        //elroy = this;
     }
 
     preload() {
@@ -34,6 +34,7 @@ class GameScene extends Phaser.Scene {
         this.screenTransition.onLevelEnter();
 
         this.startLevel();
+        GameTime.startTime = new Date();
     }
 
     startLevel() {
@@ -85,15 +86,16 @@ class GameScene extends Phaser.Scene {
     endLevel() {
         this.commandManager.destroy();
         this.currentLevel.destroy();
-        this.screenTransition.onLevelEnter();
 
         this.levelNum++;
         let levelName = this.levelLoader.getName(this.levelNum);
         if (!this.levelLoader.exists(levelName)) {
-            this.levelNum = 1;
-            //TODO: Finish game
+            GameTime.endTime = new Date();
+            new EndView(this);
+            return;
         }
 
+        this.screenTransition.onLevelEnter();
         this.startLevel();
     }
     restartLevel() {

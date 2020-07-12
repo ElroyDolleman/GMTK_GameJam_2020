@@ -1,7 +1,6 @@
 class ScreenTransition {
     
     private graphics: Phaser.GameObjects.Graphics;
-    private time: number;
     private scene:Phaser.Scene;
 
     public get active():boolean { return this.graphics.visible; };
