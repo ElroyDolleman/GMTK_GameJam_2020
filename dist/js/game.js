@@ -2,7 +2,7 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super(...arguments);
-        this.levelNum = 1;
+        this.levelNum = 5;
     }
     init() {
         this.levelLoader = new LevelLoader(this);
