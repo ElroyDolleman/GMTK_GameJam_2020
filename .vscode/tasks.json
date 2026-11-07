@@ -4,21 +4,21 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "typescript",
-            "tsconfig": "tsconfig.json",
             "label": "build-game",
-            "problemMatcher": [
-                "$tsc"
-            ],
+            "type": "npm",
+            "script": "build",
+            "problemMatcher": ["$tsc"],
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
         },
         {
-            "label": "Start Server",
-            "type": "shell",
-            "command": "http-server ${workspaceFolder} -c-1",
+            "label": "dev",
+            "type": "npm",
+            "script": "dev",
+            "isBackground": true,
+            "problemMatcher": ["$tsc-watch"]
         }
     ]
 }

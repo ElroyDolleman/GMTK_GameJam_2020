@@ -1,14 +1,16 @@
 {
     "compilerOptions": {
-        "rootDir":"./src",
+        "rootDir": "./src",
         "target": "es6",
         "sourceMap": true,
         "outFile": "dist/js/game.js",
-        "module": "system",
-        "noImplicitAny": true
+        "module": "none",
+        "noImplicitAny": true,
+        "types": [],
+        "skipLibCheck": true
     },
-    "exclude": [
-        "assets_source",
-        "dist",
+    "include": [
+        "src/**/*.ts",
+        "node_modules/phaser/types/phaser.d.ts"
     ]
 }

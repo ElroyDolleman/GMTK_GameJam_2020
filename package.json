@@ -1,0 +1,29 @@
+{
+  "name": "gmtk-gamejam-2020",
+  "version": "1.1.0",
+  "description": "GMTK Game Jam 2020 — Out of Control",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "npm run build && npm run serve",
+    "dev": "node tools/scripts/dev.ts",
+    "build": "tsc -p .",
+    "serve": "node tools/scripts/serve.ts",
+    "typecheck": "tsc -p . --noEmit && tsc -p tools --noEmit",
+    "export:commands": "node tools/scripts/export-commands.ts",
+    "export:maps": "node tools/scripts/export-maps.ts",
+    "export:art": "node tools/scripts/export-art.ts",
+    "export": "npm run export:commands && npm run export:maps",
+    "export:all": "npm run export && npm run export:art"
+  },
+  "dependencies": {
+    "phaser": "3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "~5.9"
+  }
+}

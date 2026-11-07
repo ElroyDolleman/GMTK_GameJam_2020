@@ -281,12 +281,12 @@ class EndView {
     }
 }
 class ScreenTransition {
+    get active() { return this.graphics.visible; }
+    ;
     constructor(scene) {
         this.scene = scene;
         this.createGraphics();
     }
-    get active() { return this.graphics.visible; }
-    ;
     createGraphics() {
         this.graphics = this.scene.add.graphics({ lineStyle: { width: 2, color: 0x0 }, fillStyle: { color: 0x0, alpha: 1 } });
         this.graphics.depth = 69;
@@ -362,10 +362,6 @@ class StartView {
     }
 }
 class Actor {
-    constructor(hitbox) {
-        this.speed = new Phaser.Math.Vector2();
-        this._hitbox = hitbox;
-    }
     get position() {
         return new Phaser.Math.Vector2(this.hitbox.x, this.hitbox.y);
     }
@@ -381,6 +377,10 @@ class Actor {
     }
     get speedDirectionX() { return MathHelper.sign(this.speed.x); }
     get speedDirectionY() { return MathHelper.sign(this.speed.y); }
+    constructor(hitbox) {
+        this.speed = new Phaser.Math.Vector2();
+        this._hitbox = hitbox;
+    }
     update() {
     }
     moveX() {
@@ -410,6 +410,9 @@ class Actor {
     }
 }
 class Animator {
+    get facingDirection() { return this.sprite.flipX ? -1 : 1; }
+    set facingDirection(dir) { this.sprite.flipX = dir < 0; }
+    get isSquishing() { return this.currentSquish.timer > 0; }
     constructor(scene, sprite, actor) {
         this.currentSquish = { timer: 0, startTime: 0, reverseTime: 0, scaleX: 1, scaleY: 1 };
         this.currentAnimKey = '';
@@ -417,9 +420,6 @@ class Animator {
         this.sprite = sprite;
         this.actor = actor;
     }
-    get facingDirection() { return this.sprite.flipX ? -1 : 1; }
-    set facingDirection(dir) { this.sprite.flipX = dir < 0; }
-    get isSquishing() { return this.currentSquish.timer > 0; }
     update() {
         if (this.isSquishing) {
             this.updateSquish();
@@ -492,6 +492,8 @@ var ExplosionTypes;
     ExplosionTypes[ExplosionTypes["Big"] = 2] = "Big";
 })(ExplosionTypes || (ExplosionTypes = {}));
 class Explosion extends Actor {
+    get canDamage() { return this.animation.sprite.anims.currentFrame.index < 4; }
+    ;
     constructor(scene, x, y, radius, explosionType) {
         super(new Phaser.Geom.Rectangle(x, y, 0, 0));
         this.dead = false;
@@ -502,8 +504,6 @@ class Explosion extends Actor {
         this.animation.sprite.setOrigin(0.5, 0.5);
         this.replay(x, y, radius, explosionType);
     }
-    get canDamage() { return this.animation.sprite.anims.currentFrame.index < 4; }
-    ;
     replay(x, y, radius, explosionType) {
         this.damageCircle = new Phaser.Geom.Circle(x, y, radius);
         this.animation.sprite.x = x;
@@ -533,6 +533,20 @@ class Explosion extends Actor {
     }
 }
 class Fan extends Actor {
+    get blowSpeedX() {
+        if (this.rotation == 90)
+            return this.defaultBlowPower;
+        if (this.rotation == 270)
+            return -this.defaultBlowPower;
+        return 0;
+    }
+    get blowSpeedY() {
+        if (this.rotation == 0)
+            return -this.defaultBlowPower;
+        if (this.rotation == 180)
+            return this.defaultBlowPower;
+        return 0;
+    }
     constructor(scene, x, y, rotation) {
         super(new Phaser.Geom.Rectangle(x, y, 16, 16));
         this.defaultBlowPower = 400;
@@ -549,20 +563,6 @@ class Fan extends Actor {
         // this.debug = scene.add.graphics({ fillStyle: { color: 0xFF, alpha: 0.3 } });
         // this.debug.fillRectShape(this.hitbox);
         this.createParticles(scene);
-    }
-    get blowSpeedX() {
-        if (this.rotation == 90)
-            return this.defaultBlowPower;
-        if (this.rotation == 270)
-            return -this.defaultBlowPower;
-        return 0;
-    }
-    get blowSpeedY() {
-        if (this.rotation == 0)
-            return -this.defaultBlowPower;
-        if (this.rotation == 180)
-            return this.defaultBlowPower;
-        return 0;
     }
     createParticles(scene) {
         this.emitter = particleManager.createEmitter({
@@ -926,6 +926,8 @@ var TileType;
     TileType[TileType["Breakable"] = 4] = "Breakable";
 })(TileType || (TileType = {}));
 class Tile {
+    get isSolid() { return this.tiletype == TileType.Solid || this.tiletype == TileType.Breakable; }
+    get canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid || this.tiletype == TileType.Breakable; }
     //private debug:Phaser.GameObjects.Graphics;
     constructor(sprite, tiletype, cellX, cellY, posX, posY, hitbox) {
         this.position = new Phaser.Geom.Point(posX, posY);
@@ -949,8 +951,6 @@ class Tile {
             }
         }
     }
-    get isSolid() { return this.tiletype == TileType.Solid || this.tiletype == TileType.Breakable; }
-    get canStandOn() { return this.tiletype == TileType.Solid || this.tiletype == TileType.SemiSolid || this.tiletype == TileType.Breakable; }
     break() {
         this.tiletype = TileType.Empty;
         this.sprite.destroy();
@@ -1023,6 +1023,12 @@ class Tilemap {
 }
 /// <reference path="../entities/actor.ts"/>
 class Player extends Actor {
+    get isJumping() {
+        if (this.currentState == this.airborneState) {
+            return this.speed.y < 0;
+        }
+        return false;
+    }
     constructor(scene, level, startX, startY) {
         super(new Phaser.Geom.Rectangle(startX, startY - 24, 16, 24));
         this.dead = false;
@@ -1031,12 +1037,6 @@ class Player extends Actor {
         this.view = new PlayerView(scene, this);
         this.controller = new PlayerController(this);
         this.initStates();
-    }
-    get isJumping() {
-        if (this.currentState == this.airborneState) {
-            return this.speed.y < 0;
-        }
-        return false;
     }
     initStates() {
         this.groundedState = new PlayerGroundedState(this);
@@ -1147,7 +1147,6 @@ class PlayerController {
 }
 /// <reference path="../entities/animator.ts"/>
 var PlayerAnimations;
-/// <reference path="../entities/animator.ts"/>
 (function (PlayerAnimations) {
     PlayerAnimations.Idle = { key: 'player_walk_00.png', isSingleFrame: true };
     PlayerAnimations.Dead = { key: 'player_dead_00.png', isSingleFrame: true };
@@ -1253,6 +1252,7 @@ let commandEvents = {
     die: 'die',
 };
 class CommandManager {
+    get currentCommand() { return this.levelCommands[this.commandIndex]; }
     constructor(scene, levelName) {
         this.commandIndex = 0;
         this.timer = 0;
@@ -1263,7 +1263,6 @@ class CommandManager {
         });
         this.view = new CommandView(this, scene);
     }
-    get currentCommand() { return this.levelCommands[this.commandIndex]; }
     listenToCommand(command, callback, context) {
         this.commandEventEmitter.addListener(command, callback, context);
     }
@@ -1295,6 +1294,10 @@ class CommandManager {
     }
 }
 class CommandView {
+    get x() { return 48; }
+    ;
+    get y() { return 320 - 16; }
+    ;
     constructor(commandManager, scene) {
         this.scene = scene;
         this.commandManager = commandManager;
@@ -1302,10 +1305,6 @@ class CommandView {
         this.createBackground();
         this.createCommandSprites();
     }
-    get x() { return 48; }
-    ;
-    get y() { return 320 - 16; }
-    ;
     createCommandSprites() {
         this.sprites = [];
         this.container.add(this.scene.add.sprite(0, 0, 'commands_sheet', 'indicator.png'));
